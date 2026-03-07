@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak</title>
+    <link rel="stylesheet" href="css/catalog.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class = "container">
+        <div class = "top">
+            <div class = "info">
+                <a href = "http://127.0.0.1:5000/about">О Компании</a>
+                <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
+                <a href = "about.html">Доставка</a>
+                <a href = "about.html">Контакты</a>
+            </div>
+
+                <form method="GET" action="/catalog" class="search-form">
+                    <input type="text"
+                    name="q" 
+                    placeholder="Поиск товаров..." 
+                    value="{{ request.args.get('q', '') }}"
+                    class="search-input">
+                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+                </form>
+        
+               <a href = "about.html" class = "register">Регистрация</a> 
+        </div>
+
+        <div class = "secondLayer">
+            <img class = "logo" src = "" alt = "Логотип" width = "250" height = "200">
+
+            <h1 class = "UrbanPeak">Urban Peak</h1>
+
+            <div class = "search"></div>
+        </div>
+
+        <form class = "filterForm" method="GET" action="/catalog">
+
+            <div class="filter-group">
+                <h3 class = "group-title">Тип изделия</h3>
+                <div class = "group-inputs">
+                    <label><input class = "typeForm" type="checkbox" name="type" value="cap">  Кепки</label>
+                    <label><input class = "typeForm" type="checkbox" name="type" value="hat"> Шапки</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3 class = "group-title">Цвета</h3>
+                <div class = "group-inputs">
+                    <label><input class = "colorForm" type="checkbox" name="color" value="grey">  Серый</label>
+                    <label><input class = "colorForm" type="checkbox" name="color" value="black"> Черный</label>
+                    <label><input class = "colorForm" type="checkbox" name="color" value="blue">  Синий</label>
+                    <label><input class = "colorForm" type="checkbox" name="color" value="white">  Белый</label>
+                    <label><input class = "colorForm" type="checkbox" name="color" value="red">  Красный</label>
+                </div>
+            </div>
+            <button type="submit">Применить</button>
+        </form>
+
+        {% if products %}
+
+            <div class="page-header">
+                <h2>Каталог товаров</h2>
+                {% if pagination %}
+                    <p class="page-stats">
+                        Страница {{ pagination.current_page }} из {{ pagination.total_pages }} 
+                        ({{ pagination.total_items }} товаров)
+                    </p>
+                {% endif %}
+            </div>
+
+
+            <div class = "catalogContainer">
+                {% for product in products %}
+                    <div class="product-card">
+                        {% if product.image %}
+                            <img src="{{ product.image }}" alt="{{ product.name }}" width="200">
+                        {% endif %}
+                
+                        <h3>{{ product.name }}</h3>
+                        <p>Артикул: {{ product.article }}</p>
+                        <!--<p class="price">{{ product.price }} руб.</p>-->
+                
+                        <button>Добавить в корзину</button>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- ПАГИНАЦИЯ -->
+            {% if pagination and pagination.total_pages > 1 %}
+                {% include 'pagination.html' %}
+            {% endif %}
+        {% else %}
+            <div class="no-products">
+                <p>Товары не найдены</p>
+            </div>
+        {% endif %}
+
+    </div>
+</body>
+</html>

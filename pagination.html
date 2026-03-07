@@ -1,0 +1,71 @@
+<!-- pagination.html -->
+{% if pagination and pagination.total_pages > 1 %}
+<div class="pagination-container">
+    <div class="pagination-info">
+        {% if pagination.total_items > 0 %}
+        Показано {{ pagination.start_item }} - {{ pagination.end_item }} из {{ pagination.total_items }} товаров
+        {% endif %}
+        <span class="page-info">Страница {{ pagination.current_page }} из {{ pagination.total_pages }}</span>
+    </div>
+    
+    <div class="pagination">
+        <!-- Первая страница -->
+        {% if pagination.has_prev %}
+            <a href="/catalog?page=1" class="page-link first" title="Первая страница">
+                &laquo;&laquo;
+            </a>
+            <a href="/catalog?page={{ pagination.prev_page }}" class="page-link prev" title="Предыдущая">
+                &laquo;
+            </a>
+        {% else %}
+            <span class="page-link disabled first">&laquo;&laquo;</span>
+            <span class="page-link disabled prev">&laquo;</span>
+        {% endif %}
+        
+        <!-- Номера страниц -->
+        {% if pagination.pages and pagination.pages[0] > 1 %}
+            <a href="/catalog?page=1" class="page-link">1</a>
+            {% if pagination.pages[0] > 2 %}
+                <span class="page-dots">...</span>
+            {% endif %}
+        {% endif %}
+        
+        {% if pagination.pages %}
+            {% for page_num in pagination.pages %}
+                {% if page_num == pagination.current_page %}
+                    <span class="page-link active">{{ page_num }}</span>
+                {% else %}
+                    <a href="/catalog?page={{ page_num }}" class="page-link">{{ page_num }}</a>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        {% if pagination.pages and pagination.pages[-1] < pagination.total_pages %}
+            {% if pagination.pages[-1] < pagination.total_pages - 1 %}
+                <span class="page-dots">...</span>
+            {% endif %}
+            <a href="/catalog?page={{ pagination.total_pages }}" class="page-link">{{ pagination.total_pages }}</a>
+        {% endif %}
+        
+        <!-- Последняя страница -->
+        {% if pagination.has_next %}
+            <a href="/catalog?page={{ pagination.next_page }}" class="page-link next" title="Следующая">
+                &raquo;
+            </a>
+            <a href="/catalog?page={{ pagination.total_pages }}" class="page-link last" title="Последняя страница">
+                &raquo;&raquo;
+            </a>
+        {% else %}
+            <span class="page-link disabled next">&raquo;</span>
+            <span class="page-link disabled last">&raquo;&raquo;</span>
+        {% endif %}
+    </div>
+    
+    <!-- Быстрый переход -->
+    
+</div>
+{% elif pagination and pagination.total_items > 0 %}
+<div class="pagination-info">
+    Всего товаров: {{ pagination.total_items }}
+</div>
+{% endif %}

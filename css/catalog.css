@@ -1,0 +1,165 @@
+
+.container {
+    font-size: 18px;
+    font-family: cursive;
+}
+
+.container a {
+    color: #454e55;
+    text-decoration: none;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between; /* разделяем на две группы */
+    align-items: center;
+    padding: 15px 30px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.info {
+    display: flex;
+    width: 60%; /* занимает 60% ширины */
+    justify-content: space-between; /* равные расстояния */
+}
+
+.top .register{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.search-form {
+    display: flex;
+    justify-content: center;           /* Ставим в ряд */
+    gap: 0;                  /* Убираем промежуток */
+    width: 100%;             /* На всю ширину */
+    max-width: 50px;        /* Или нужная ширина */
+    margin: 0 auto;          /* Центрирование */
+}
+
+.search-input {
+    flex: 1;                 /* Растягивается на всю доступную ширину */
+    padding: 10px 15px;
+    border: 2px solid #2d2929;
+    border-right: 2px solid #000000;      /* Убираем правую границу */
+    border-radius: 30px 0 0 30px;  /* Скругление только слева */
+    font-size: 16px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #000000;
+}
+
+.search-btn {
+    padding: 10px 20px;
+    background: #ffffff;
+    color: #454e55;
+    border: 2px solid #1c1e20;
+    border-left: none;       /* Убираем левую границу */
+    border-radius: 0 30px 30px 0;  /* Скругление только справа */
+    font-size: 16px;
+    cursor: pointer;
+    white-space: nowrap;     /* Текст не переносится */
+}
+
+.search-btn:hover {
+    background: #ffffff;
+    border-color: #464242;
+    color:rgb(0, 0, 0);
+}
+
+.secondLayer {
+    display: flex;
+    align-items: center;
+
+    border-bottom: 2px solid;
+}
+
+.UrbanPeak{
+    margin: 0 auto;
+}
+
+.search {
+    width: 250px;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+
+.catalogContainer {
+    padding: 15px 100px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 150px;
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    flex-direction: column; 
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.filterForm {
+    display: flex;
+    flex-direction: row;
+    gap: 40px;               /* Расстояние между группами */
+    align-items: flex-start;
+    justify-content: center
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.group-inputs {
+    display: flex;
+    flex-direction: column;  /* Чекбоксы в колонку */
+    gap: 8px;                /* Расстояние между чекбоксами */
+}
+
+.group-inputs label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.group-title {
+    margin: 0;               /* Убираем отступы у заголовка */
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.filterForm button[type="submit"] {
+    background: transparent;
+    border: 2px solid #000000;
+    color: #000000;
+    border-radius: 6px;
+    padding: 10px 28px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.filterForm button[type="submit"]:hover {
+    background: #ffffff;
+    color: rgb(59, 55, 55);
+}

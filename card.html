@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak</title>
+    <link rel="stylesheet" href="css/card.css">
+</head>
+<body>
+    <div class = "container">
+        <div class = "top">
+            <div class = "info">
+                <a href = "index.html">О Компании</a>
+                <a href = "catalog.html">Каталог</a>
+                <a href = "about.html">Доставка</a>
+                <a href = "about.html">Контакты</a>
+            </div>
+        
+               <a href = "about.html" class = "register">Регистрация</a> 
+        </div>
+
+        <div class = "secondLayer">
+            <img class = "logo" src = "" alt = "Логотип" width = "250" height = "200">
+
+            <h1 class = "UrbanPeak">Urban Peak</h1>
+
+            <div class = "search"></div>
+        </div>
+
+        {% if products %}
+            <div class = "catalogContainer">
+                {% for product in products %}
+                    <div class="product-card">
+                        {% if product.image %}
+                            <img src="{{ product.image }}" alt="{{ product.name }}" width="200">
+                        {% endif %}
+                
+                        <h3>{{ product.name }}</h3>
+                        <p>Артикул: {{ product.article }}</p>
+                        <!-- <p class="price">{{ product.price }}</p> -->
+                
+                        <button>Добавить в корзину</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+
+.container {
+    font-size: 18px;
+    font-family: cursive;
+}
+
+.container a {
+    color: #454e55;
+    text-decoration: none;
+}
+
+.top {
+    display: flex;
+    justify-content: space-between; /* разделяем на две группы */
+    align-items: center;
+    padding: 15px 30px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.info {
+    display: flex;
+    width: 60%; /* занимает 60% ширины */
+    justify-content: space-between; /* равные расстояния */
+}
+
+.top .register{
+    display: flex;
+    justify-content: flex-end;
+}
+
+.secondLayer {
+    display: flex;
+    align-items: center;
+
+    border-bottom: 2px solid;
+}
+
+.UrbanPeak{
+    margin: 0 auto;
+}
+
+.search {
+    width: 250px;
+}
+
+.catalogContainer {
+    padding: 15px 100px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 150px;
+}
