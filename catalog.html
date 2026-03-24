@@ -10,11 +10,12 @@
 <body>
     <div class = "container">
         <div class = "top">
+            <img class = "logo" src = "/css/data/testlogo2.png" alt = "Логотип" width = "250" height = "200">
+
             <div class = "info">
-                <a href = "http://127.0.0.1:5000/about">О Компании</a>
+                <a href = "http://127.0.0.1:5000/about">О нас</a>
                 <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
                 <a href = "about.html">Доставка</a>
-                <a href = "about.html">Контакты</a>
             </div>
 
                 <form method="GET" action="/catalog" class="search-form">
@@ -26,15 +27,7 @@
                     <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
                 </form>
         
-               <a href = "about.html" class = "register">Регистрация</a> 
-        </div>
-
-        <div class = "secondLayer">
-            <img class = "logo" src = "" alt = "Логотип" width = "250" height = "200">
-
-            <h1 class = "UrbanPeak">Urban Peak</h1>
-
-            <div class = "search"></div>
+               <a href = "/register" class = "register">Регистрация</a> 
         </div>
 
         <form class = "filterForm" method="GET" action="/catalog">
@@ -84,7 +77,9 @@
                         <p>Артикул: {{ product.article }}</p>
                         <!--<p class="price">{{ product.price }} руб.</p>-->
                 
-                        <button>Добавить в корзину</button>
+                        <button onclick="window.location.href='/product/{{ product.article }}'" class="btn-details">
+                        Подробнее
+                        </button>
                     </div>
                 {% endfor %}
             </div>

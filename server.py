@@ -1,13 +1,30 @@
 
 from flask import Flask
-from flask import render_template, send_from_directory, jsonify, request
+from flask import render_template, send_from_directory, jsonify, request, redirect, url_for
 import json
 import math
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user
+from models import db, User
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 app = Flask(__name__, template_folder='.', static_folder='css')
 
 ITEMS_PER_PAGE = 12
+
+app.config['SECRET_KEY'] = 'секретный-ключ-для-сессий'  # Обязательно!
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # файл БД
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db.init_app(app)
+login_manager = LoginManager(app)
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 def get_paginated_products(filtered_products, page=1, per_page=ITEMS_PER_PAGE):
@@ -92,7 +109,7 @@ def search_products(products, query):
     
 
 @app.route('/catalog')
-def hello_world():
+def catalog():
     page = request.args.get('page', default=1, type=int)
     types = request.args.getlist('type')
     colors = request.args.getlist('color')
@@ -153,12 +170,28 @@ def hello_world():
                                'type': types
                            }) # отображение страницы каталога
 
+@app.route('/product/<string:product_article>') # страница товара
+def product_page(product_article):
+    with open('products.json', 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    product = None
+    for p in data['products']:
+        if p['article'] == product_article:
+            product = p
+            break
+
+    if not product:
+        return "Товар не найден", 404
+    
+    return render_template("product.html", product=product)
+
 @app.route('/css/catalog.css')
 def catalog_custom_static():
     return send_from_directory('css', 'catalog.css')
 
 @app.route('/data')
-def catalog():
+def data():
     with open('products.json', 'r', encoding='utf-8') as f:
         data = json.load(f)
     return jsonify(data)
@@ -167,10 +200,79 @@ def catalog():
 def about():
     return render_template("index.html") # отображение главной страницы
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        tel = request.form.get('tel')
+        password = request.form.get('password')
+
+        if not username or not email or not password or not tel:
+            return "Все поля обязательны", 400
+        
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            return "Пользователь с таким email уже существует", 400
+        
+        hashed_password = generate_password_hash(password)
+
+        new_user = User(
+            username=username,
+            email=email,
+            tel = tel,
+            password=hashed_password
+        )
+
+        try:
+            db.session.add(new_user)
+            db.session.commit()
+
+            #with app.app_context():
+                #all_users = User.query.all()
+                #for user in all_users:
+                    #print(f"ID: {user.id}")
+                    #print(f"Имя: {user.username}")
+                    #print(f"Email: {user.email}")
+                    #print(f"Пароль (хэш): {user.password[:50]}...")
+                    #print("-" * 50)
+
+            return redirect(url_for('login'))
+        except:
+            db.session.rollback()
+            return "Ошибка при сохранении", 500
+        
+    return render_template("register.html")
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        user = User.query.filter_by(email=email).first()
+        
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('catalog'))
+        
+        else:
+            return "Неверный email или пароль", 400
+    return render_template("login.html")
+
 @app.route('/css/index.css')
 def index_custom_static():
     return send_from_directory('css', 'index.css')
 
+@app.route('/css/product.css')
+def product_custom_static():
+    return send_from_directory('css', 'product.css')
+
+@app.route('/css/register.css')
+def register_custom_static():
+    return send_from_directory('css', 'register.css')
 
 if __name__ == '__main__':
-  app.run(debug=True)
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True)

@@ -137,11 +137,70 @@
     color:rgb(0, 0, 0);
 }
 
-
-.search {
-    width: 250px;
+.formContainer {
+    height:100vh;
+    margin-left: 50px;
+    color: rgb(64, 64, 64);
 }
 
-.aboutCompany {
-    height: 100vh;
+.inputForms form{
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    margin-right: 30px;
+}
+
+.inputForms input {
+    font-family: 'PT Serif', serif;
+    font-size: 16px;
+    border-radius: 30px;
+    border: 2px solid #000000;
+    padding: 5px;
+}
+
+.inputForms button {
+    font-family: 'PT Serif', serif;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    padding: 14px 42px;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    letter-spacing: 1px;
+}
+
+.inputForms button:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 0 5px 15px rgba(57, 57, 57, 0.2);
+    transform: scale(1.05);
+}
+
+.btn-back {
+    display: flex;
+    background-color: #000000;
+    color:#ffffff;
+    border-radius: 30px;
+    padding:5px;
+    cursor: pointer;
+    font-family: 'PT Serif', serif;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.5s ease;
+}
+
+.btn-back:hover {
+    background-color: #555;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transform: scale(1.05);
+}
+
+.inputForms a {
+    font-family: 'PT Serif', serif;
+    font-size: 16px;
+    color: rgb(64, 64, 64);
 }

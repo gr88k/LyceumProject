@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urban Peak</title>
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="/css/product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -30,9 +30,30 @@
                <a href = "about.html" class = "register">Регистрация</a> 
         </div>
 
-        <div class = "aboutCompany">
-            <p> О компании...</p>
+        <div class = "productContainer">
+            <button onclick="window.location.href='/catalog'" class="btn-back">←</button>
+
+            {% if product %}
+                <img src="/{{ product.image }}" alt="{{ product.name }}" width="350">
+                <div class = "product-info">
+                    <p class = "name">{{product.name}}</p>
+
+                    <div class = "rprice">
+                        <p>Рекомендуемая розничная цена продажи: {{product.price}} ₽</p>
+                        <p>Оптовая цена за 1 шт: {{product.price}} ₽</p>
+                    </div>
+
+                    <div class = "bottom-info">
+                        <div class = "stats">
+                            <p>Артикул: {{product.article}}</p>
+                            <p>Цвет: {{product.color}}</p>
+                            <p>В наличии:   </p>
+                        </div>
+                        <button class = "bskt-btn">В корзину</button>
+                    </div>
+                </div>
+
+             {% endif %}
+
         </div>
     </div>
-</body>
-</html>

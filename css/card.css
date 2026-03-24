@@ -30,20 +30,6 @@
     justify-content: flex-end;
 }
 
-.secondLayer {
-    display: flex;
-    align-items: center;
-
-    border-bottom: 2px solid;
-}
-
-.UrbanPeak{
-    margin: 0 auto;
-}
-
-.search {
-    width: 250px;
-}
 
 .catalogContainer {
     padding: 15px 100px;

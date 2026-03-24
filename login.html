@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak</title>
+    <link rel="stylesheet" href="css/register.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class = "container">
+        <div class = "top">
+            <img class = "logo" src = "css/data/testlogo2.png" alt = "Логотип" width = "250" height = "200">
+
+            <div class = "info">
+                <a href = "http://127.0.0.1:5000/about">О нас</a>
+                <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
+                <a href = "about.html">Доставка</a>
+            </div>
+
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text"
+                name="q" 
+                placeholder="Поиск товаров..." 
+                value="{{ request.args.get('q', '') }}"
+                class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+        
+            <a href = "about.html" class = "register">Регистрация</a> 
+
+        </div>
+
+            <div class="formContainer">
+                <button onclick="window.location.href='/catalog'" class="btn-back">←</button>
+
+                <div class = "inputForms">
+                    <form method="POST" action="/login">
+                        <input type="email" placeholder="Адрес электронной почты" name = "email">
+                        <input type="password" placeholder="Пароль" name = "password">
+
+                        <button type = "submit" class = "sbm-btn">Войти</button>
+                    </form>
+                </div>
+            </div>
+    </div>
+</body>

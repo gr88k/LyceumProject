@@ -1,33 +1,100 @@
 
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap');
+
 .container {
-    font-size: 18px;
-    font-family: cursive;
+    font-family: 'PT Serif', serif;
+    background-color: rgb(237, 237, 237);
 }
 
-.container a {
-    color: #454e55;
+.top a {
+    color: rgb(64, 64, 64);
     text-decoration: none;
+    font-size: 32px;
+    font-family: 'PT Sans';
+    width: 205px;
 }
 
 .top {
     display: flex;
     justify-content: space-between; /* разделяем на две группы */
     align-items: center;
-    padding: 15px 30px;
-    background: #f8f9fa;
+    padding: 15px 0px;
+    background: #ffffff;
     border-radius: 8px;
-    border-bottom: 2px solid #e9ecef;
+    border-bottom: 2px solid #000000;
+    height: 100px;
+    margin-bottom: 30px;
+
 }
+
+.logo {
+    padding-left: 50px;
+    max-height: 150px;
+    max-width: 150px;
+    transition: all 0.5s ease;
+}
+
+.logo:hover{
+    transform: scale(1.1);
+}
+
 
 .info {
     display: flex;
-    width: 60%; /* занимает 60% ширины */
+    gap: 0px;
+    padding-left:50px;
     justify-content: space-between; /* равные расстояния */
 }
 
 .top .register{
     display: flex;
     justify-content: flex-end;
+    padding-right: 50px;
+}
+
+.search-form {
+    display: flex;
+    justify-content: center;           /* Ставим в ряд */
+    gap: 0;                  /* Убираем промежуток */
+    width: 100%;             /* На всю ширину */
+    max-width: 50px;        /* Или нужная ширина */
+    margin: 0 auto;          /* Центрирование */
+}
+
+.search-input {
+    flex: 1;                 /* Растягивается на всю доступную ширину */
+    padding: 10px 15px;
+    border: 2px solid #2d2929;
+    border-right: 2px solid #000000;      /* Убираем правую границу */
+    border-radius: 30px 0 0 30px;  /* Скругление только слева */
+    font-size: 16px;
+    outline: none;
+}
+
+.search-input:focus {
+    border-color: #000000;
+}
+
+.search-btn {
+    padding: 10px 20px;
+    background: #ffffff;
+    color: #454e55;
+    border: 2px solid #1c1e20;
+    border-left: none;       /* Убираем левую границу */
+    border-radius: 0 30px 30px 0;  /* Скругление только справа */
+    font-size: 16px;
+    cursor: pointer;
+    white-space: nowrap;     /* Текст не переносится */
+    font-family: 'PT Serif', serif;
+    font-size: 16px;
+}
+
+.search-btn:hover {
+    background: #ffffff;
+    border-color: #464242;
+    color:rgb(0, 0, 0);
 }
 
 .search-form {
@@ -71,25 +138,15 @@
     color:rgb(0, 0, 0);
 }
 
-.secondLayer {
-    display: flex;
-    align-items: center;
-
-    border-bottom: 2px solid;
-}
-
-.UrbanPeak{
-    margin: 0 auto;
-}
-
-.search {
-    width: 250px;
-}
 
 .page-header {
+    margin-top: 30px;
     display: flex;
     align-items: center;
     flex-direction: column;
+    background-color: rgb(237, 237, 237);
+    border-top: 2px solid #000000;
+    border-bottom: 2px solid #000000;
 }
 
 
@@ -100,6 +157,7 @@
     flex-wrap: wrap;
     justify-content: flex-start;
     gap: 150px;
+    background-color: rgb(237, 237, 237);
 }
 
 .pagination-container {
@@ -112,6 +170,18 @@
     display: flex;
     align-items: center;
     flex-direction: column;
+}
+
+.pagination-container {
+    color: rgb(64, 64, 64);
+    text-decoration: none;
+    font-family: 'PT Sans';
+}
+
+.pagination-container a{
+    color: rgb(64, 64, 64);
+    text-decoration: none;
+    font-family: 'PT Sans';
 }
 
 .filterForm {
@@ -162,4 +232,36 @@
 .filterForm button[type="submit"]:hover {
     background: #ffffff;
     color: rgb(59, 55, 55);
+}
+
+.product-card img {
+    border-radius: 20px;
+    border: 3px solid #000000;
+    transition: all 0.5s ease;
+}
+
+.product-card img:hover {
+    transform: scale(1.05);
+}
+
+.product-card button {
+    font-size: 18px;
+    padding:5px;
+    font-family: 'PT Serif', serif;
+    background-color: #000000;
+    color: #ffffff;
+    border-radius: 10px;
+    cursor:pointer;
+    transition: all 0.5s ease;
+}
+
+.product-card button:hover {
+    background-color: #555;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transform: scale(1.05);
+}
+
+.product-card p {
+    color: rgb(81,81,81);
+    opacity: 80%;
 }

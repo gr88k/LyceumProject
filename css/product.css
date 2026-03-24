@@ -1,13 +1,10 @@
+
 @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
 
 @import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap');
 
-.container {
-    font-family: 'PT Serif', serif;
-    background-color: rgb(237, 237, 237);
-}
 
-.top a {
+.container a {
     color: rgb(64, 64, 64);
     text-decoration: none;
     font-size: 32px;
@@ -24,7 +21,6 @@
     border-radius: 8px;
     border-bottom: 2px solid #000000;
     height: 100px;
-    margin-bottom: 30px;
 
 }
 
@@ -86,62 +82,114 @@
     font-size: 16px;
     cursor: pointer;
     white-space: nowrap;     /* Текст не переносится */
+}
+
+.search-btn:hover {
+    background: #ffffff;
+    border-color: #464242;
+    color:rgb(0, 0, 0);
+}
+
+/*.page-header {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}*/
+
+.productContainer {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 40px;
+    padding: 40px;
+    background-color: rgb(237, 237, 237);
+    height:100vh;
+    font-size: 18px;
+    font-family: 'PT Serif', serif;
+}
+
+.btn-back {
+    display: flex;
+    background-color: #000000;
+    color:#ffffff;
+    border-radius: 30px;
+    padding:5px;
+    cursor: pointer;
     font-family: 'PT Serif', serif;
     font-size: 16px;
+    font-weight: 500;
+    transition: all 0.5s ease;
 }
 
-.search-btn:hover {
-    background: #ffffff;
-    border-color: #464242;
-    color:rgb(0, 0, 0);
+.btn-back:hover {
+    background-color: #555;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transform: scale(1.05);
 }
 
-.search-form {
+.productContainer img {
     display: flex;
-    justify-content: center;           /* Ставим в ряд */
-    gap: 0;                  /* Убираем промежуток */
-    width: 100%;             /* На всю ширину */
-    max-width: 50px;        /* Или нужная ширина */
-    margin: 0 auto;          /* Центрирование */
+    border-radius: 20px;
+    border: 3px solid #000000;
+    transition: all 0.5s ease;
 }
 
-.search-input {
-    flex: 1;                 /* Растягивается на всю доступную ширину */
-    padding: 10px 15px;
-    border: 2px solid #2d2929;
-    border-right: 2px solid #000000;      /* Убираем правую границу */
-    border-radius: 30px 0 0 30px;  /* Скругление только слева */
-    font-size: 16px;
-    outline: none;
+.productContainer img:hover {
+    transform: scale(1.1);
+}
+.product-info {
+    display: flex;
+    flex-direction: column;
+    padding-left: 100px;
 }
 
-.search-input:focus {
-    border-color: #000000;
+.name {
+    font-size: 32px;
+    display:flex;
+    justify-content: center;
 }
 
-.search-btn {
-    padding: 10px 20px;
-    background: #ffffff;
-    color: #454e55;
-    border: 2px solid #1c1e20;
-    border-left: none;       /* Убираем левую границу */
-    border-radius: 0 30px 30px 0;  /* Скругление только справа */
-    font-size: 16px;
+
+.rprice {
+    color:rgb(24, 22, 22);
+    display:flex;
+    flex-direction: column;
+    border: 2px solid rgb(24, 22, 22);
+    border-radius: 0px;
+    padding:5px;
+    max-width: 450px;
+}
+
+.bottom-info {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap:150px;
+}
+
+.stats {
+    display: flex;
+    flex-direction: column;
+    padding-left: 0px;
+    padding-top: 30px;
+    color: rgb(81,81,81);
+    opacity: 80%;
+}
+
+.bskt-btn {
+    height: 100px;
+    width: 230px;
+    background-color: #000000;
+    color:#ffffff;
+    font-size:24px;
+    font-family: 'PT Serif', serif;
+    border-radius: 50px;
     cursor: pointer;
-    white-space: nowrap;     /* Текст не переносится */
+    transition: all 0.5s ease;
 }
 
-.search-btn:hover {
-    background: #ffffff;
-    border-color: #464242;
-    color:rgb(0, 0, 0);
-}
-
-
-.search {
-    width: 250px;
-}
-
-.aboutCompany {
-    height: 100vh;
+.bskt-btn:hover {
+    background-color: #555;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    transform: scale(1.05);
 }

@@ -2,15 +2,17 @@
     "products": [
         {
             "article": "SH-001",
-            "name": "Шапка ерная",
+            "name": "Шапка черная",
             "image": "css/data/shp001.jpg",
-            "color": "black"
+            "color": "black",
+            "price": 1000
         },
         {
             "article": "SH-002",
             "name": "Шапка черная",
             "image": "css/data/shp002.jpg",
-            "color": "black"
+            "color": "black",
+            "price": 1000
         },
         {
             "article": "SH-003",
