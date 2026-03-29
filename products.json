@@ -1,116 +1,122 @@
 {
     "products": [
-        {
+        {   "id": 1,
             "article": "SH-001",
             "name": "Шапка черная",
             "image": "css/data/shp001.jpg",
             "color": "black",
             "price": 1000
         },
-        {
+        {   
+            "id": 2,
             "article": "SH-002",
             "name": "Шапка черная",
             "image": "css/data/shp002.jpg",
             "color": "black",
             "price": 1000
         },
-        {
+        {   
+            "id": 3,
             "article": "SH-003",
             "name": "Шапка белая",
             "image": "css/data/shp003.jpg",
             "color": "white"
         },
-        {
+        {   
+            "id": 4,
             "article": "SH-004",
             "name": "Шапка синяя",
             "image": "css/data/shp004.jpg",
             "color": "blue"
         },
-        {
+        {   
+            "id": 5,
             "article": "SH-005",
             "name": "Шапка белая",
             "image": "css/data/shp005.jpg",
             "color": "white"
         },
-        {
+        {   
+            "id": 6,
             "article": "SH-006",
             "name": "Шапка зеленая",
             "image": "css/data/shp006.jpg",
             "color": "green"
         },
-        {
+        {   
+            "id": 7,
             "article": "SH-007",
             "name": "Шапка синяя",
             "image": "css/data/shp007.jpg",
             "color": "blue"
         },
-        {
+        {   "id": 8,
             "article": "SH-008",
             "name": "Шапка черная",
             "image": "css/data/shp008.jpg",
             "color": "black"
         },
-        {
+        {   "id": 9,
             "article": "SH-009",
             "name": "Шапка серая",
             "image": "css/data/shp009.jpg",
             "color": "grey"
         },
-        {
+        {   "id": 10,
             "article": "CP-001",
             "name": "Кепка черная",
             "image": "css/data/cap001.jpg",
             "color": "black"
         },
-        {
+        {   "id": 11,
             "article": "CP-002",
             "name": "Кепка черная",
             "image": "css/data/cap002.jpg",
             "color": "black"
         },
-        {
+        {   "id": 12,
             "article": "CP-003",
             "name": "Кепка серая",
             "image": "css/data/cap003.jpg",
             "color": "grey"
         },
-        {
+        {   "id": 13,
             "article": "CP-004",
             "name": "Кепка синяя",
             "image": "css/data/cap004.jpg",
             "color": "blue"
         },
-        {
+        {   "id": 14,
             "article": "CP-005",
             "name": "Кепка черная",
             "image": "css/data/cap005.jpg",
             "color": "black"
         },
-        {
+        {   "id": 15,
             "article": "CP-006",
             "name": "Кепка синяя",
             "image": "css/data/cap006.jpg",
             "color": "blue"
         },
-        {
+        {   "id": 16,
             "article": "CP-007",
             "name": "Кепка красная",
             "image": "css/data/cap007.jpg",
             "color": "red"
         },
-        {
+        {   "id": 17,
             "article": "CP-008",
             "name": "Кепка красная",
             "image": "css/data/cap008.jpg",
             "color": "red"
         },
-        {
+        {   "id": 18,
             "article": "CP-009",
             "name": "Кепка белая",
             "image": "css/data/cap009.jpg",
             "color": "white"
         },
-        {
+        {   "id": 19,
             "article": "CP-010",
             "name": "Кепка белая",
             "image": "css/data/cap010.jpg",

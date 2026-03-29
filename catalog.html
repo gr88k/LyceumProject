@@ -26,8 +26,26 @@
                     class="search-input">
                     <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
                 </form>
-        
-               <a href = "/register" class = "register">Регистрация</a> 
+                
+                {% if current_user.is_authenticated %}
+                    <div class = "dropdown">
+                        <!--<a href = "/profile" class = "register">Профиль</a>-->
+                        <span class="register">Профиль ▼</span>
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                            <a href="{{ url_for('about') }}">Мои заказы</a>
+                            {% if current_user.role == 'Admin' %}
+                                <hr>
+                                <a href="{{ url_for('about') }}">Заказы</a>
+                                <a href="{{ url_for('about') }}">Пользователи</a>
+                            {% endif %}
+                            <hr>
+                            <a href="{{ url_for('logout') }}">Выйти</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href = "/register" class = "register">Регистрация</a>
+                {% endif %}
         </div>
 
         <form class = "filterForm" method="GET" action="/catalog">

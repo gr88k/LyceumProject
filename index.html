@@ -27,7 +27,11 @@
                     <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
                 </form>
         
-               <a href = "about.html" class = "register">Регистрация</a> 
+                {% if current_user.is_authenticated %}
+                    <a href = "/profile" class = "register">Профиль</a>
+                {% else %}
+                    <a href = "/register" class = "register">Регистрация</a>
+                {% endif %}
         </div>
 
         <div class = "aboutCompany">

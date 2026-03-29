@@ -1,10 +1,10 @@
 
 from flask import Flask
-from flask import render_template, send_from_directory, jsonify, request, redirect, url_for
+from flask import render_template, send_from_directory, jsonify, request, redirect, url_for, flash
 import json
 import math
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager, UserMixin, login_user
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from models import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -260,6 +260,58 @@ def login():
             return "Неверный email или пароль", 400
     return render_template("login.html")
 
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required  # только для авторизованных
+def profile():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        tel = request.form.get('tel')
+
+        if not username or not email or not tel:
+            flash('Все поля обязательны для заполнения', 'danger')
+            return redirect(url_for('profile'))
+        
+        if email != current_user.email:  # email изменился
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email:
+                flash('Этот email уже используется другим пользователем', 'danger')
+                return redirect(url_for('profile'))
+            
+        if tel != current_user.tel:  # email изменился
+            existing_tel = User.query.filter_by(tel=tel).first()
+            if existing_tel:
+                flash('Этот номер телефона уже используется другим пользователем', 'danger')
+                return redirect(url_for('profile'))
+            
+        current_user.username = username
+        current_user.email = email
+        current_user.tel = tel
+
+        try:
+            db.session.commit()
+            flash('Профиль успешно обновлен!', 'success')
+            print("completed")
+            return redirect(url_for('profile'))
+        except:
+            db.session.rollback()
+            flash('Ошибка при сохранении данных', 'danger')
+            return redirect(url_for('profile'))
+        
+    return render_template('profile.html', user=current_user)
+
+@app.route('/logout')
+@login_required
+def logout():
+    # Выход из аккаунта
+    logout_user()
+    
+    # Показываем сообщение об успешном выходе
+    flash('Вы вышли из аккаунта', 'info')
+    
+    # Перенаправляем на главную или страницу входа
+    return redirect(url_for('catalog'))
+
 @app.route('/css/index.css')
 def index_custom_static():
     return send_from_directory('css', 'index.css')
@@ -271,6 +323,10 @@ def product_custom_static():
 @app.route('/css/register.css')
 def register_custom_static():
     return send_from_directory('css', 'register.css')
+
+@app.route('/css/profile.css')
+def profile_custom_static():
+    return send_from_directory('css', 'profile.css')
 
 if __name__ == '__main__':
     with app.app_context():
