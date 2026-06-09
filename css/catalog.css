@@ -315,3 +315,363 @@
     color: rgb(81,81,81);
     opacity: 80%;
 }
+
+/* ==========================================================================
+   СТИЛИ ДЛЯ ГОРИЗОНТАЛЬНОЙ ПАНЕЛИ ФИЛЬТРОВ (БЕЗ ИЗМЕНЕНИЯ СТАРЫХ КАРТОЧЕК)
+   ========================================================================== */
+
+.filter-top-bar {
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    border-radius: 0px;
+    padding: 15px 20px;
+    margin-bottom: 35px; /* Отступ до начала сетки товаров */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.horizontal-filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filter-selectors-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+/* Колонки опций внутри фильтра */
+.filter-dropdown-bucket {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 160px;
+}
+
+.bucket-label {
+    font-family: 'PT Sans', sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    color: #000;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #000;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+}
+
+.bucket-checkboxes {
+    max-height: 100px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.bucket-checkboxes label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+}
+
+.bucket-checkboxes input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: #000;
+}
+
+/* Переключатель наличия */
+.filter-toggle-bucket {
+    display: flex;
+    align-items: center;
+    margin-top: 20px;
+    min-width: 200px;
+}
+
+.toggle-switch-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'PT Sans', sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.toggle-switch-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #000;
+}
+
+/* Нижняя панель управления внутри фильтра */
+.filter-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+}
+
+.filter-apply-btn {
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #000000;
+    padding: 8px 24px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-apply-btn:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+.filter-reset-link {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 14px;
+    color: #666;
+    text-decoration: underline;
+}
+
+.filter-reset-link:hover {
+    color: #ff0000;
+}
+
+.no-products {
+    text-align: center;
+    padding: 50px 0;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 16px;
+    width: 100%;
+}
+
+/* Скроллбары для чекбоксов */
+.bucket-checkboxes::-webkit-scrollbar {
+    width: 4px;
+}
+.bucket-checkboxes::-webkit-scrollbar-thumb {
+    background: #000;
+}
+
+/* Окно корзины*/
+
+/* --- Стили для модального окна корзины --- */
+.cart-modal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6); 
+    font-family: 'PT Sans', sans-serif;
+}
+
+.cart-modal-content {
+    background-color: #fefefe;
+    margin: 7% auto; 
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%; 
+    max-width: 750px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+}
+
+.cart-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 12px;
+}
+
+.cart-modal-header h2 {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #222;
+}
+
+.close-cart-btn {
+    color: #aaa;
+    font-size: 32px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-cart-btn:hover {
+    color: #ff4d4d;
+}
+
+.cart-modal-body {
+    padding: 15px 0;
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.empty-cart-msg {
+    text-align: center;
+    color: #777;
+    font-size: 18px;
+    padding: 30px 0;
+}
+
+/* Элемент строки товара */
+.cart-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+    gap: 15px;
+}
+
+.cart-item-img {
+    width: 65px;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.cart-item-details {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cart-item-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: #111;
+}
+
+.cart-item-meta {
+    font-size: 13px;
+    color: #555;
+}
+
+.cart-item-article {
+    font-size: 12px;
+    color: #999;
+}
+
+.cart-item-qty {
+    flex: 0.8;
+    text-align: center;
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+}
+
+.cart-item-price {
+    flex: 1;
+    text-align: right;
+    font-weight: bold;
+    font-size: 16px;
+    color: #28a745;
+}
+
+.cart-item-remove-btn {
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    padding: 0 10px;
+}
+
+.cart-item-remove-btn:hover {
+    color: #ff4d4d;
+    transform: scale(1.15);
+}
+
+/* Нижняя часть окна */
+.cart-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+.cart-total {
+    font-size: 22px;
+    font-weight: bold;
+    color: #222;
+}
+
+#cart-total-price {
+    color: #28a745;
+}
+
+.checkout-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: 'PT Serif', serif;
+}
+
+.checkout-btn:hover {
+    background-color: #218838;
+    transform: scale(1.03);
+}
+
+/* --- Позиционирование иконки корзины в шапке --- */
+.header-user-block {
+    display: flex;
+    align-items: center;
+    gap: 25px; /* Расстояние между иконкой корзины и профилем */
+    padding-right: 50px; /* Отступ от правого края экрана */
+}
+
+.header-cart-link {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;         /* Сбрасываем глобальную ширину ссылок в 205px */
+    font-size: 26px !important;     /* Аккуратный размер иконки */
+    color: rgb(64, 64, 64) !important;
+    transition: color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+/* Эффект при наведении на корзину */
+.header-cart-link:hover {
+    color: #28a745 !important;     /* Окрашивается в зеленый бренд-цвет */
+    transform: scale(1.15);        /* Слегка увеличивается */
+}
+
+/* Корректировка кнопки Профиль/Регистрация, чтобы она не съезжала */
+.header-user-block .register {
+    width: auto !important;        /* Убираем жесткую ширину */
+    white-space: nowrap;           /* Защита от переноса текста */
+    padding: 0;
+    margin: 0;
+}

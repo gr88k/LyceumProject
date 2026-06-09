@@ -8,35 +8,40 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class = "container">
-        <div class = "top">
-            <img class = "logo" src = "/css/data/testlogo2.png" alt = "Логотип" width = "250" height = "200">
+    <div class="container">
+        <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
 
-            <div class = "info">
-                <a href = "http://127.0.0.1:5000/about">О нас</a>
-                <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
-                <a href = "about.html">Доставка</a>
+            <div class="info">
+                <a href="http://127.0.0.1:5000/about">О нас</a>
+                <a href="http://127.0.0.1:5000/catalog">Каталог</a>
+                <a href="about.html">Доставка</a>
             </div>
 
-                <form method="GET" action="/catalog" class="search-form">
-                    <input type="text"
-                    name="q" 
-                    placeholder="Поиск товаров..." 
-                    value="{{ request.args.get('q', '') }}"
-                    class="search-input">
-                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-                </form>
-                
-                {% if current_user.is_authenticated %}
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text"
+                       name="q" 
+                       placeholder="Поиск товаров..." 
+                       value="{{ request.args.get('q', '') }}"
+                       class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+
+            {% if current_user.is_authenticated %}
+                    <a href="#" id="open-cart-btn" class="header-cart-link" title="Открыть корзину">
+                        <i class="fas fa-shopping-cart"></i>
+                    </a>
+
                     <div class = "dropdown">
                         <!--<a href = "/profile" class = "register">Профиль</a>-->
                         <span class="register">Профиль ▼</span>
                         <div class="dropdown-menu">
                             <a href="{{ url_for('profile') }}">Личный кабинет</a>
-                            <a href="{{ url_for('about') }}">Мои заказы</a>
+                            <a href="{{ url_for('my_orders') }}">Мои заказы</a>
                             {% if current_user.role == 'Admin' %}
                                 <hr>
-                                <a href="{{ url_for('about') }}">Заказы</a>
+                                <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                                <a href="{{ url_for('admin_products') }}">Товары</a>
                                 <a href="{{ url_for('about') }}">Пользователи</a>
                             {% endif %}
                             <hr>
@@ -48,31 +53,59 @@
                 {% endif %}
         </div>
 
-        <form class = "filterForm" method="GET" action="/catalog">
+        <div class="filter-top-bar">
+            <form method="GET" action="/catalog" id="filter-form" class="horizontal-filter-form">
+                <input type="hidden" name="q" value="{{ request.args.get('q', '') }}">
 
-            <div class="filter-group">
-                <h3 class = "group-title">Тип изделия</h3>
-                <div class = "group-inputs">
-                    <label><input class = "typeForm" type="checkbox" name="type" value="cap">  Кепки</label>
-                    <label><input class = "typeForm" type="checkbox" name="type" value="hat"> Шапки</label>
-                </div>
-            </div>
+                <div class="filter-selectors-row">
+                    <div class="filter-dropdown-bucket">
+                        <label class="bucket-label">Тип товара</label>
+                        <div class="bucket-checkboxes">
+                            <label><input type="checkbox" name="category" value="cap" {% if 'cap' in selected_categories %}checked{% endif %}> Бейсболки</label>
+                            <label><input type="checkbox" name="category" value="hat" {% if 'hat' in selected_categories %}checked{% endif %}> Шапки</label>
+                        </div>
+                    </div>
 
-            <div class="filter-group">
-                <h3 class = "group-title">Цвета</h3>
-                <div class = "group-inputs">
-                    <label><input class = "colorForm" type="checkbox" name="color" value="grey">  Серый</label>
-                    <label><input class = "colorForm" type="checkbox" name="color" value="black"> Черный</label>
-                    <label><input class = "colorForm" type="checkbox" name="color" value="blue">  Синий</label>
-                    <label><input class = "colorForm" type="checkbox" name="color" value="white">  Белый</label>
-                    <label><input class = "colorForm" type="checkbox" name="color" value="red">  Красный</label>
+                    <div class="filter-dropdown-bucket">
+                        <label class="bucket-label">Цвет</label>
+                        <div class="bucket-checkboxes">
+                            {% for color in all_colors %}
+                                <label>
+                                    <input type="checkbox" name="color" value="{{ color }}" {% if color in selected_colors %}checked{% endif %}> 
+                                    {{ color }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="filter-dropdown-bucket">
+                        <label class="bucket-label">Размер</label>
+                        <div class="bucket-checkboxes">
+                            {% for size in all_sizes %}
+                                <label>
+                                    <input type="checkbox" name="size" value="{{ size }}" {% if size in selected_sizes %}checked{% endif %}> 
+                                    {{ size }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="filter-toggle-bucket">
+                        <label class="toggle-switch-label">
+                            <input type="checkbox" name="out_of_stock" value="1" {% if show_out_of_stock %}checked{% endif %}>
+                            <span class="toggle-text">Показывать отсутствующие</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
-            <button type="submit">Применить</button>
-        </form>
+
+                <div class="filter-actions-row">
+                    <button type="submit" class="filter-apply-btn">Применить фильтры</button>
+                    <a href="/catalog" class="filter-reset-link">Сбросить всё</a>
+                </div>
+            </form>
+        </div>
 
         {% if products %}
-
             <div class="page-header">
                 <h2>Каталог товаров</h2>
                 {% if pagination %}
@@ -83,8 +116,7 @@
                 {% endif %}
             </div>
 
-
-            <div class = "catalogContainer">
+            <div class="catalogContainer">
                 {% for product in products %}
                     <div class="product-card">
                         {% if product.image %}
@@ -93,25 +125,121 @@
                 
                         <h3>{{ product.name }}</h3>
                         <p>Артикул: {{ product.article }}</p>
-                        <!--<p class="price">{{ product.price }} руб.</p>-->
                 
                         <button onclick="window.location.href='/product/{{ product.article }}'" class="btn-details">
-                        Подробнее
+                            Подробнее
                         </button>
                     </div>
                 {% endfor %}
             </div>
 
-            <!-- ПАГИНАЦИЯ -->
             {% if pagination and pagination.total_pages > 1 %}
                 {% include 'pagination.html' %}
             {% endif %}
         {% else %}
             <div class="no-products">
-                <p>Товары не найдены</p>
+                <p>Товары по выбранным критериям фильтрации не найдены.</p>
+                <a href="/catalog" class="filter-apply-btn" style="display:inline-block; margin-top:10px; text-decoration:none;">Вернуться в каталог</a>
             </div>
         {% endif %}
 
     </div>
+
+    <!-- ===== МОДАЛЬНОЕ ОКНО КОРЗИНЫ ===== -->
+    {% if current_user.is_authenticated %}
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-modal-content">
+            <div class="cart-modal-header">
+                <h2><i class="fas fa-shopping-cart"></i> Корзина</h2>
+                <span class="close-cart-btn" id="close-cart-btn">&times;</span>
+            </div>
+            <div class="cart-modal-body" id="cart-modal-body">
+                <p class="empty-cart-msg">Загрузка...</p>
+            </div>
+            <div class="cart-modal-footer">
+                <span class="cart-total">Итого: <span id="cart-total-price">0 ₽</span></span>
+                <button class="checkout-btn" onclick="window.location.href='/checkout'">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cartModal = document.getElementById('cart-modal');
+        const openCartBtn = document.getElementById('open-cart-btn');
+        const closeCartBtn = document.getElementById('close-cart-btn');
+
+        function openCart() {
+            cartModal.style.display = 'block';
+            loadCart();
+        }
+
+        function closeCart() {
+            cartModal.style.display = 'none';
+        }
+
+        openCartBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openCart();
+        });
+
+        closeCartBtn.addEventListener('click', closeCart);
+
+        // Закрытие по клику вне окна
+        window.addEventListener('click', function(e) {
+            if (e.target === cartModal) closeCart();
+        });
+
+        async function loadCart() {
+            const body = document.getElementById('cart-modal-body');
+            const totalEl = document.getElementById('cart-total-price');
+            body.innerHTML = '<p class="empty-cart-msg">Загрузка...</p>';
+
+            try {
+                const res = await fetch('/cart/get');
+                if (!res.ok) throw new Error('Ошибка сервера');
+                const data = await res.json();
+
+                if (!data.items || data.items.length === 0) {
+                    body.innerHTML = '<p class="empty-cart-msg">Ваша корзина пуста</p>';
+                    totalEl.textContent = '0 ₽';
+                    return;
+                }
+
+                totalEl.textContent = data.total_price.toLocaleString('ru-RU') + ' ₽';
+
+                body.innerHTML = data.items.map(item => `
+                    <div class="cart-item-row" id="cart-row-${item.id}">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                        <div class="cart-item-details">
+                            <span class="cart-item-name">${item.name}</span>
+                            <span class="cart-item-meta">${item.color} / ${item.size}</span>
+                            <span class="cart-item-article">Арт: ${item.article}</span>
+                        </div>
+                        <span class="cart-item-qty">${item.quantity} шт.</span>
+                        <span class="cart-item-price">${item.item_total.toLocaleString('ru-RU')} ₽</span>
+                        <button class="cart-item-remove-btn" onclick="removeFromCart(${item.id})" title="Удалить">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                body.innerHTML = '<p class="empty-cart-msg">Не удалось загрузить корзину</p>';
+            }
+        }
+
+        async function removeFromCart(itemId) {
+            try {
+                const res = await fetch(`/cart/remove/${itemId}`, { method: 'POST' });
+                if (!res.ok) throw new Error();
+                // Удаляем строку из DOM и перезагружаем итог
+                loadCart();
+            } catch {
+                alert('Ошибка при удалении товара');
+            }
+        }
+    </script>
+    {% endif %}
+
 </body>
 </html>

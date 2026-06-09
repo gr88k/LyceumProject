@@ -28,7 +28,26 @@
                 </form>
         
                 {% if current_user.is_authenticated %}
-                    <a href = "/profile" class = "register">Профиль</a>
+                    <a href="#" id="open-cart-btn" class="header-cart-link" title="Открыть корзину">
+                        <i class="fas fa-shopping-cart"></i>
+                    </a>
+                    <div class = "dropdown">
+                        <!--<a href = "/profile" class = "register">Профиль</a>-->
+                        <span class="register">Профиль ▼</span>
+                        <div class="dropdown-menu">
+                            <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                            <a href="{{ url_for('my_orders') }}">Мои заказы</a>
+                            {% if current_user.role == 'Admin' %}
+                                <hr>
+                                <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                                <a href="{{ url_for('admin_products') }}">Товары</a>
+                                <a href="{{ url_for('about') }}">Пользователи</a>
+                                <a href="{{ url_for('about') }}">Пользователи</a>
+                            {% endif %}
+                            <hr>
+                            <a href="{{ url_for('logout') }}">Выйти</a>
+                        </div>
+                    </div>
                 {% else %}
                     <a href = "/register" class = "register">Регистрация</a>
                 {% endif %}
@@ -38,26 +57,266 @@
             <button onclick="window.location.href='/catalog'" class="btn-back">←</button>
 
             {% if product %}
-                <img src="/{{ product.image }}" alt="{{ product.name }}" width="350">
+                <img src="{{ product.image }}" alt="{{ product.name }}" width="350">
                 <div class = "product-info">
                     <p class = "name">{{product.name}}</p>
 
                     <div class = "rprice">
-                        <p>Рекомендуемая розничная цена продажи: {{product.price}} ₽</p>
                         <p>Оптовая цена за 1 шт: {{product.price}} ₽</p>
+                    </div>
+                    
+                    <p class="product-article-under-price">Артикул: {{product.article}}</p>
+
+                    <div class="variants-section">
+                        <p class="section-title">Укажите количество для нужных позиций:</p>
+                        
+                        <div class="colors-stack">
+                            {% for color, sizes in variants_data.items() %}
+                                <div class="color-group-box">
+                                    <div class="color-title-row">
+                                        <img src="{{ color_icon }}" alt="icon" class="color-mini-icon">
+                                        <span class="color-name-text">{{ color }}</span>
+                                    </div>
+                                    
+                                    <div class="size-rows-container">
+                                        {% for sz in sizes %}
+                                            <div class="size-order-row" 
+                                                 data-color="{{ color }}" 
+                                                 data-size="{{ sz.size }}" 
+                                                 data-stock="{{ sz.stock }}"
+                                                 data-variant-id="{{ sz.id }}">
+                                                
+                                                <div class="size-name-zone">
+                                                    <span class="size-badge">{{ sz.size }}</span>
+                                                    <span class="size-stock-text">Остаток: <span class="stock-num">{{ sz.stock }}</span> шт.</span>
+                                                </div>
+
+                                                <div class="row-quantity-control">
+                                                    <button type="button" class="row-qty-btn minus-btn">-</button>
+                                                    <input type="text" class="row-qty-input" value="0" inputmode="numeric" pattern="[0-9]*">
+                                                    <button type="button" class="row-qty-btn plus-btn">+</button>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
 
                     <div class = "bottom-info">
-                        <div class = "stats">
-                            <p>Артикул: {{product.article}}</p>
-                            <p>Цвет: {{product.color}}</p>
-                            <p>В наличии:   </p>
+                        {% if product.description %}
+                        <div class="product-description">
+                            <p class="section-title desc-title">Описание:</p>
+                            <p class="desc-text">{{ product.description }}</p>
                         </div>
-                        <button class = "bskt-btn">В корзину</button>
+                        {% endif %}
+                        <button class="bskt-btn" id="add-to-cart-btn" style="margin-left: auto;">Добавить в корзину</button>
                     </div>
                 </div>
 
+                <script>
+                    const orderRows = document.querySelectorAll('.size-order-row');
+                    const addToCartBtn = document.getElementById('add-to-cart-btn');
+
+                    orderRows.forEach(row => {
+                        const maxStock = parseInt(row.getAttribute('data-stock'));
+                        const input = row.querySelector('.row-qty-input');
+                        const minusBtn = row.querySelector('.minus-btn');
+                        const plusBtn = row.querySelector('.plus-btn');
+
+                        // Функция валидации ручного ввода с клавиатуры
+                        function validateInput() {
+                            let val = input.value.replace(/\D/g, ''); // только цифры
+                            
+                            if (val === '' || val === '0') {
+                                input.value = '0';
+                                row.classList.remove('selected-for-order');
+                                return;
+                            }
+
+                            let num = parseInt(val);
+                            if (num > maxStock) {
+                                alert(`Нельзя заказать больше, чем доступно на складе (${maxStock} шт.)`);
+                                num = maxStock;
+                            }
+
+                            input.value = num;
+                            row.classList.add('selected-for-order');
+                        }
+
+                        input.addEventListener('input', validateInput);
+                        
+                        // Если пользователь стёр всё и ушел из поля — ставим 0
+                        input.addEventListener('blur', function() {
+                            if (input.value === '') {
+                                input.value = '0';
+                                row.classList.remove('selected-for-order');
+                            }
+                        });
+
+                        // Кнопка Минус
+                        minusBtn.addEventListener('click', () => {
+                            let val = parseInt(input.value) || 0;
+                            if (val > 0) {
+                                input.value = val - 1;
+                            }
+                            if (input.value === '0') {
+                                row.classList.remove('selected-for-order');
+                            }
+                        });
+
+                        // Кнопка Плюс
+                        plusBtn.addEventListener('click', () => {
+                            let val = parseInt(input.value) || 0;
+                            if (val < maxStock) {
+                                input.value = val + 1;
+                                row.classList.add('selected-for-order');
+                            } else {
+                                alert(`Достигнут лимит склада для этой позиции (${maxStock} шт.)`);
+                            }
+                        });
+                    });
+
+                    // Кнопка отправки всего набора в корзину
+                    addToCartBtn.addEventListener('click', async function(e) {
+                        let items = [];
+
+                        orderRows.forEach(row => {
+                            const qty = parseInt(row.querySelector('.row-qty-input').value) || 0;
+                            if (qty > 0) {
+                                // variant_id хранится в data-атрибуте строки
+                                const variantId = parseInt(row.getAttribute('data-variant-id'));
+                                if (variantId) {
+                                    items.push({ variant_id: variantId, quantity: qty });
+                                }
+                            }
+                        });
+
+                        if (items.length === 0) {
+                            alert("Выберите количество хотя бы для одной позиции (минимум 1 шт.)");
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch('/cart/add', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ items })
+                            });
+
+                            const data = await res.json();
+
+                            if (res.status === 401) {
+                                alert('Добавить в корзину могут только зарегистрированные пользователи.');
+                                return;
+                            }
+
+                            if (!res.ok) {
+                                alert('Ошибка: ' + (data.message || 'Не удалось добавить товар'));
+                                return;
+                            }
+
+                            // Сброс полей после успешного добавления
+                            orderRows.forEach(row => {
+                                row.querySelector('.row-qty-input').value = '0';
+                                row.classList.remove('selected-for-order');
+                            });
+
+                            alert('Товары успешно добавлены в корзину!');
+
+                        } catch (err) {
+                            alert('Ошибка сети. Попробуйте ещё раз.');
+                        }
+                    });
+                </script>
              {% endif %}
 
         </div>
     </div>
+
+    <!-- ===== МОДАЛЬНОЕ ОКНО КОРЗИНЫ ===== -->
+    {% if current_user.is_authenticated %}
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-modal-content">
+            <div class="cart-modal-header">
+                <h2><i class="fas fa-shopping-cart"></i> Корзина</h2>
+                <span class="close-cart-btn" id="close-cart-btn">&times;</span>
+            </div>
+            <div class="cart-modal-body" id="cart-modal-body">
+                <p class="empty-cart-msg">Загрузка...</p>
+            </div>
+            <div class="cart-modal-footer">
+                <span class="cart-total">Итого: <span id="cart-total-price">0 ₽</span></span>
+                <button class="checkout-btn" onclick="window.location.href='/checkout'">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cartModal = document.getElementById('cart-modal');
+        const openCartBtn = document.getElementById('open-cart-btn');
+        const closeCartBtn = document.getElementById('close-cart-btn');
+
+        function openCart() {
+            cartModal.style.display = 'block';
+            loadCart();
+        }
+        function closeCart() {
+            cartModal.style.display = 'none';
+        }
+
+        openCartBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            openCart();
+        });
+        closeCartBtn.addEventListener('click', closeCart);
+        window.addEventListener('click', function(e) {
+            if (e.target === cartModal) closeCart();
+        });
+
+        async function loadCart() {
+            const body = document.getElementById('cart-modal-body');
+            const totalEl = document.getElementById('cart-total-price');
+            body.innerHTML = '<p class="empty-cart-msg">Загрузка...</p>';
+            try {
+                const res = await fetch('/cart/get');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                if (!data.items || data.items.length === 0) {
+                    body.innerHTML = '<p class="empty-cart-msg">Ваша корзина пуста</p>';
+                    totalEl.textContent = '0 ₽';
+                    return;
+                }
+                totalEl.textContent = data.total_price.toLocaleString('ru-RU') + ' ₽';
+                body.innerHTML = data.items.map(item => `
+                    <div class="cart-item-row" id="cart-row-${item.id}">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                        <div class="cart-item-details">
+                            <span class="cart-item-name">${item.name}</span>
+                            <span class="cart-item-meta">${item.color} / ${item.size}</span>
+                            <span class="cart-item-article">Арт: ${item.article}</span>
+                        </div>
+                        <span class="cart-item-qty">${item.quantity} шт.</span>
+                        <span class="cart-item-price">${item.item_total.toLocaleString('ru-RU')} ₽</span>
+                        <button class="cart-item-remove-btn" onclick="removeFromCart(${item.id})" title="Удалить">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } catch {
+                body.innerHTML = '<p class="empty-cart-msg">Не удалось загрузить корзину</p>';
+            }
+        }
+
+        async function removeFromCart(itemId) {
+            try {
+                const res = await fetch(`/cart/remove/${itemId}`, { method: 'POST' });
+                if (!res.ok) throw new Error();
+                loadCart();
+            } catch {
+                alert('Ошибка при удалении товара');
+            }
+        }
+    </script>
+    {% endif %}

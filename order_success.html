@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak — Заказ оформлен</title>
+    <link rel="stylesheet" href="/css/checkout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .success-box {
+            max-width: 620px;
+            margin: 80px auto;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 50px 44px;
+            text-align: center;
+        }
+        .success-icon { font-size: 64px; color: #28a745; margin-bottom: 18px; }
+        .success-title { font-family: 'PT Serif', serif; font-size: 30px; font-weight: 700; margin-bottom: 12px; }
+        .success-sub { font-size: 17px; color: #555; margin-bottom: 28px; line-height: 1.5; }
+        .order-num { font-weight: 700; color: #7c3aed; font-size: 20px; }
+        .btn-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-catalog {
+            background: #000;
+            color: #fff;
+            border: none;
+            padding: 13px 36px;
+            font-family: 'PT Serif', serif;
+            font-size: 17px;
+            border-radius: 40px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-catalog:hover { background: #444; }
+        .btn-orders {
+            background: transparent;
+            color: #7c3aed;
+            border: 2px solid #7c3aed;
+            padding: 13px 36px;
+            font-family: 'PT Serif', serif;
+            font-size: 17px;
+            border-radius: 40px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-orders:hover { background: #7c3aed; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
+        <div class="info">
+            <a href="/catalog">Каталог</a>
+        </div>
+        <div class="top-right">
+            <div class="dropdown">
+                <span class="register">Профиль ▼</span>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                    <a href="{{ url_for('my_orders') }}">Мои заказы</a>
+                    <hr>
+                    <a href="{{ url_for('logout') }}">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="checkout-page">
+        <div class="success-box">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="success-title">Заказ оформлен!</div>
+            <div class="success-sub">
+                Ваш заказ <span class="order-num">№{{ order.id }}</span> успешно принят.<br>
+                Мы свяжемся с вами по телефону или e-mail для подтверждения.
+            </div>
+            <div class="btn-row">
+                <a href="/catalog" class="btn-catalog">Продолжить покупки</a>
+                <a href="{{ url_for('my_orders') }}" class="btn-orders">Мои заказы</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

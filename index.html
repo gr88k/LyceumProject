@@ -1,42 +1,172 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urban Peak</title>
-    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="/css/catalog.css">
+    <link rel="stylesheet" href="/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class = "container">
-        <div class = "top">
-            <img class = "logo" src = "/css/data/testlogo2.png" alt = "Логотип" width = "250" height = "200">
+    <div class="container">
+        <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
 
-            <div class = "info">
-                <a href = "http://127.0.0.1:5000/about">О нас</a>
-                <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
-                <a href = "about.html">Доставка</a>
+            <div class="info">
+                <a href="/about">О нас</a>
+                <a href="/catalog">Каталог</a>
+                <a href="/about">Доставка</a>
             </div>
 
-                <form method="GET" action="/catalog" class="search-form">
-                    <input type="text"
-                    name="q" 
-                    placeholder="Поиск товаров..." 
-                    value="{{ request.args.get('q', '') }}"
-                    class="search-input">
-                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-                </form>
-        
-                {% if current_user.is_authenticated %}
-                    <a href = "/profile" class = "register">Профиль</a>
-                {% else %}
-                    <a href = "/register" class = "register">Регистрация</a>
-                {% endif %}
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text"
+                       name="q"
+                       placeholder="Поиск товаров..."
+                       value="{{ request.args.get('q', '') }}"
+                       class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+
+            {% if current_user.is_authenticated %}
+                <a href="#" id="open-cart-btn" class="header-cart-link" title="Открыть корзину">
+                    <i class="fas fa-shopping-cart"></i>
+                </a>
+
+                <div class="dropdown">
+                    <span class="register">Профиль ▼</span>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                        <a href="{{ url_for('my_orders') }}">Мои заказы</a>
+                        {% if current_user.role == 'Admin' %}
+                            <hr>
+                            <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                            <a href="{{ url_for('admin_products') }}">Товары</a>
+                            <a href="{{ url_for('about') }}">Пользователи</a>
+                        {% endif %}
+                        <hr>
+                        <a href="{{ url_for('logout') }}">Выйти</a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="/register" class="register">Регистрация</a>
+            {% endif %}
         </div>
 
-        <div class = "aboutCompany">
-            <p> О компании...</p>
+        <main class="about-main">
+            <section class="about-section">
+                <h2>Кто мы такие?</h2>
+                <p><strong>UrbanPeak</strong> — ведущий оптовый поставщик головных уборов, который задает тренды на рынке. Мы объединяем актуальный городской стиль, безупречное качество и выгодные условия для бизнеса. Наша миссия — обеспечивать магазины, бренды и корпоративных клиентов головными уборами, которые хочется носить каждый день.</p>
+            </section>
+
+            <section class="about-section">
+                <h2>Что мы предлагаем?</h2>
+                <p>Мы внимательно следим за модой и регулярно обновляем наш ассортимент. В нашем каталоге представлены:</p>
+                <ul>
+                    <li><strong>Сезонные коллекции:</strong> от теплых зимних шапок и снудов до легких летних кепок, бейсболок и панам.</li>
+                    <li><strong>Разнообразие стилей:</strong> базовая классика, спортивный шик и ультрамодные стритвир-модели.</li>
+                    <li><strong>Широкая палитра:</strong> актуальные цвета и качественные материалы, устойчивые к износу.</li>
+                </ul>
+            </section>
+
+            <section class="about-section">
+                <h2>Почему выбирать UrbanPeak выгодно?</h2>
+                <blockquote class="about-quote">
+                    <strong>Индивидуальный подход к каждому партнеру</strong> — мы понимаем потребности как малого бизнеса, так и крупных торговых сетей.
+                </blockquote>
+                <ul>
+                    <li><strong>Высокое качество контроля:</strong> Мы тщательно проверяем каждую партию товара, поэтому гарантируем отсутствие брака.</li>
+                    <li><strong>Гибкая система скидок:</strong> Чем больше объем заказа, тем выгоднее цена. У нас предусмотрены специальные условия для постоянных клиентов.</li>
+                    <li><strong>Быстрая логистика:</strong> Оперативно собираем заказы и доставляем их по всей стране строго в бизнес-сроки.</li>
+                    <li><strong>Маркетинговая поддержка:</strong> Предоставляем готовые фото- и видеоматериалы нашей продукции для вашего сайта и соцсетей.</li>
+                </ul>
+            </section>
+
+            <section class="about-section">
+                <h2>Как мы работаем?</h2>
+                <ol>
+                    <li><strong>Выбор товара:</strong> Вы изучаете наш каталог и оставляете заявку на сайте.</li>
+                    <li><strong>Согласование:</strong> Наш менеджер связывается с вами, уточняет детали и рассчитывает индивидуальную скидку.</li>
+                    <li><strong>Оплата и сборка:</strong> После подтверждения заказа мы оперативно формируем партию на складе.</li>
+                    <li><strong>Доставка:</strong> Отправляем товар надежной транспортной компанией прямо к вам.</li>
+                </ol>
+            </section>
+
+            <section class="about-section cta-section">
+                <h3>Готовы поднять ваш бизнес на новую вершину?</h3>
+                <p>Станьте партнером <strong>UrbanPeak</strong> уже сегодня и предложите своим покупателям головные уборы, которые станут хитами продаж.</p>
+                <div class="cta-buttons">
+                    <a href="/catalog" class="btn btn-secondary">Перейти в каталог</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div id="cart-modal" class="cart-modal">
+        <div class="cart-modal-content">
+            <div class="cart-modal-header">
+                <h2><i class="fas fa-shopping-cart"></i> Корзина</h2>
+                <span class="close-cart-btn" id="close-cart-btn">&times;</span>
+            </div>
+            <div class="cart-modal-body" id="cart-modal-body">
+                <p class="empty-cart-msg">Загрузка...</p>
+            </div>
+            <div class="cart-modal-footer">
+                <span class="cart-total">Итого: <span id="cart-total-price">0 ₽</span></span>
+                <button class="checkout-btn" onclick="window.location.href='/checkout'">Оформить заказ</button>
+            </div>
         </div>
     </div>
+
+    <script>
+        const cartModal = document.getElementById('cart-modal');
+        const openCartBtn = document.getElementById('open-cart-btn');
+        const closeCartBtn = document.getElementById('close-cart-btn');
+
+        openCartBtn.addEventListener('click', e => { e.preventDefault(); cartModal.style.display = 'block'; loadCart(); });
+        closeCartBtn.addEventListener('click', () => cartModal.style.display = 'none');
+        window.addEventListener('click', e => { if (e.target === cartModal) cartModal.style.display = 'none'; });
+
+        async function loadCart() {
+            const body = document.getElementById('cart-modal-body');
+            const totalEl = document.getElementById('cart-total-price');
+            body.innerHTML = '<p class="empty-cart-msg">Загрузка...</p>';
+            try {
+                const res = await fetch('/cart/get');
+                const data = await res.json();
+                if (!data.items || data.items.length === 0) {
+                    body.innerHTML = '<p class="empty-cart-msg">Ваша корзина пуста</p>';
+                    totalEl.textContent = '0 ₽';
+                    return;
+                }
+                totalEl.textContent = data.total_price.toLocaleString('ru-RU') + ' ₽';
+                body.innerHTML = data.items.map(item => `
+                    <div class="cart-item-row">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-img">
+                        <div class="cart-item-details">
+                            <span class="cart-item-name">${item.name}</span>
+                            <span class="cart-item-meta">${item.color} / ${item.size}</span>
+                            <span class="cart-item-article">Арт: ${item.article}</span>
+                        </div>
+                        <span class="cart-item-qty">${item.quantity} шт.</span>
+                        <span class="cart-item-price">${item.item_total.toLocaleString('ru-RU')} ₽</span>
+                        <button class="cart-item-remove-btn" onclick="removeFromCart(${item.id})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } catch {
+                body.innerHTML = '<p class="empty-cart-msg">Не удалось загрузить корзину</p>';
+            }
+        }
+
+        async function removeFromCart(itemId) {
+            await fetch(`/cart/remove/${itemId}`, { method: 'POST' });
+            loadCart();
+        }
+    </script>
+    {% endif %}
+
 </body>
 </html>

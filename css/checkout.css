@@ -1,0 +1,309 @@
+@import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background-color: rgb(237, 237, 237);
+    font-family: 'PT Sans', sans-serif;
+    color: #222;
+}
+
+/* ---- ШАПКА ---- */
+.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    background: #ffffff;
+    border-bottom: 2px solid #000000;
+    height: 100px;
+}
+
+.logo {
+    max-height: 80px;
+    max-width: 150px;
+    transition: transform 0.4s ease;
+}
+.logo:hover { transform: scale(1.07); }
+
+.info {
+    display: flex;
+    gap: 30px;
+}
+.info a, .top-right a {
+    color: rgb(64, 64, 64);
+    text-decoration: none;
+    font-size: 22px;
+    font-family: 'PT Sans', sans-serif;
+}
+.info a:hover, .top-right a:hover { color: #000; }
+
+.top-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.register {
+    font-family: 'PT Serif', serif;
+    font-size: 22px;
+    cursor: pointer;
+    color: rgb(64, 64, 64);
+    text-decoration: none;
+}
+
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu {
+    position: absolute;
+    top: 100%; right: 0;
+    background: white;
+    min-width: 160px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+    z-index: 200;
+}
+.dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; }
+.dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-decoration: none;
+    font-family: 'PT Serif', serif;
+    font-size: 15px;
+    transition: background 0.2s;
+}
+.dropdown-menu a:hover { background: #f5f5f5; }
+.dropdown-menu hr { margin: 4px 0; border: none; border-top: 1px solid #eee; }
+
+/* ---- СТРАНИЦА ---- */
+.checkout-page {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 30px 60px;
+}
+
+.page-title {
+    font-family: 'PT Serif', serif;
+    font-size: 34px;
+    font-weight: 700;
+    margin-bottom: 28px;
+    color: #111;
+}
+
+/* Flash */
+.flash {
+    padding: 12px 20px;
+    border-radius: 6px;
+    margin-bottom: 18px;
+    font-size: 15px;
+}
+.flash-danger  { background: #fde8e8; border: 1px solid #f5c2c2; color: #b00; }
+.flash-success { background: #e8f8ec; border: 1px solid #b2e2bb; color: #186a2e; }
+.flash-warning { background: #fff8e1; border: 1px solid #ffe082; color: #7a5c00; }
+
+/* ---- СЕТКА ---- */
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ---- КАРТОЧКИ ---- */
+.form-card {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 24px 28px;
+}
+
+.card-title {
+    font-family: 'PT Serif', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #111;
+    background: #ede8f0;
+    margin: -24px -28px 22px;
+    padding: 12px 28px;
+    border-bottom: 2px solid #ddd;
+    letter-spacing: 0.3px;
+}
+
+/* ---- ПОЛЯ ---- */
+.form-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.form-row label {
+    padding-top: 10px;
+    font-size: 15px;
+    color: #444;
+    font-family: 'PT Sans', sans-serif;
+}
+
+.req { color: #c0003a; }
+
+.input-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+.f-input {
+    width: 100%;
+    padding: 9px 14px;
+    font-size: 15px;
+    font-family: 'PT Sans', sans-serif;
+    border: 1.5px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    color: #222;
+    transition: border-color 0.2s;
+    outline: none;
+}
+.f-input:focus { border-color: #8b5cf6; }
+.f-input.input-error { border-color: #c0003a; }
+
+.f-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23666' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+}
+
+.f-textarea {
+    resize: vertical;
+    min-height: 80px;
+    line-height: 1.5;
+}
+
+.err-msg {
+    font-size: 12px;
+    color: #c0003a;
+    min-height: 16px;
+}
+
+.hint-text {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+/* ---- СОСТАВ ЗАКАЗА ---- */
+.order-summary-card {
+    background: #fff;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+}
+.order-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: #ede8f0;
+    font-family: 'PT Serif', serif;
+    font-size: 14px;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+}
+.order-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eee;
+    vertical-align: middle;
+}
+.order-table tfoot td {
+    border-bottom: none;
+    border-top: 2px solid #ddd;
+    padding-top: 14px;
+}
+.item-name {
+    display: block;
+    font-weight: 700;
+    color: #111;
+}
+.item-article {
+    display: block;
+    font-size: 12px;
+    color: #999;
+    margin-top: 2px;
+}
+.item-price { font-weight: 600; color: #111; }
+.total-label { text-align: right; font-weight: 700; font-size: 16px; padding-right: 20px; }
+.total-sum { font-weight: 700; font-size: 20px; color: #28a745; }
+
+/* ---- НИЖНЯЯ ЧАСТЬ ---- */
+.checkout-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px 0 20px;
+}
+
+.agree-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+}
+.agree-label input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: #7c3aed;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.agree-link { color: #7c3aed; text-decoration: underline; }
+.agree-error { color: #c0003a; }
+.agree-error .agree-link { color: #c0003a; }
+
+.confirm-btn {
+    background: #7c3aed;
+    color: #fff;
+    border: none;
+    padding: 16px 52px;
+    font-family: 'PT Serif', serif;
+    font-size: 20px;
+    font-weight: 700;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.15s, box-shadow 0.25s;
+    letter-spacing: 0.3px;
+}
+.confirm-btn:hover {
+    background: #6d28d9;
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(109,40,217,0.35);
+}
+
+/* ---- АДАПТИВ ---- */
+@media (max-width: 860px) {
+    .checkout-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .form-row label { padding-top: 0; }
+    .checkout-bottom { flex-direction: column; align-items: flex-start; }
+    .confirm-btn { width: 100%; text-align: center; }
+}

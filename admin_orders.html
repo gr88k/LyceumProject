@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak — Управление заказами</title>
+    <link rel="stylesheet" href="/css/checkout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-page { max-width: 1280px; margin: 40px auto; padding: 0 30px 60px; }
+
+        .admin-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .filter-status-select {
+            padding: 9px 14px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 15px;
+            cursor: pointer;
+            outline: none;
+            background: #fff;
+        }
+        .filter-status-select:focus { border-color: #7c3aed; }
+        .search-admin {
+            padding: 9px 14px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 15px;
+            width: 260px;
+            outline: none;
+        }
+        .search-admin:focus { border-color: #7c3aed; }
+        .orders-count { margin-left: auto; color: #888; font-size: 14px; }
+
+        /* Таблица */
+        .admin-table-wrap { overflow-x: auto; }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            background: #fff;
+            border: 2px solid #ddd;
+        }
+        .admin-table thead tr {
+            background: #ede8f0;
+        }
+        .admin-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-family: 'PT Serif', serif;
+            font-size: 14px;
+            font-weight: 700;
+            color: #333;
+            border-bottom: 2px solid #ddd;
+            white-space: nowrap;
+        }
+        .admin-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+            color: #333;
+        }
+        .admin-table tbody tr:hover { background: #faf8ff; }
+        .admin-table tbody tr.hidden-row { display: none; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .status-Новый       { background: #e3f0ff; color: #1a5fa8; }
+        .status-В.обработке { background: #fff3cd; color: #856404; }
+        .status-Отправлен   { background: #e8f4fd; color: #0c5460; }
+        .status-Выполнен    { background: #e8f8ec; color: #155724; }
+        .status-Отменён     { background: #fde8e8; color: #721c24; }
+
+        .status-select-inline {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'PT Sans', sans-serif;
+            cursor: pointer;
+            outline: none;
+            background: #fff;
+            min-width: 140px;
+        }
+        .status-select-inline:focus { border-color: #7c3aed; }
+
+        .save-status-btn {
+            padding: 5px 12px;
+            background: #7c3aed;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: 'PT Sans', sans-serif;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .save-status-btn:hover { background: #6d28d9; }
+        .save-status-btn.saved { background: #28a745; }
+
+        /* Детали заказа (раскрываемые) */
+        .expand-btn {
+            background: none;
+            border: none;
+            color: #7c3aed;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 4px;
+            transition: transform 0.2s;
+        }
+        .expand-btn.open { transform: rotate(90deg); }
+
+        .order-detail-row td {
+            padding: 0;
+            background: #fdfaff;
+        }
+        .order-detail-inner {
+            padding: 18px 24px;
+            display: none;
+            border-top: 1px solid #e8d8ff;
+        }
+        .order-detail-inner.open { display: block; }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+        .detail-section h4 {
+            font-family: 'PT Serif', serif;
+            font-size: 14px;
+            color: #7c3aed;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #e8d8ff;
+            padding-bottom: 4px;
+        }
+        .detail-section p { font-size: 13px; color: #444; line-height: 1.7; }
+
+        .mini-items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .mini-items-table th {
+            text-align: left;
+            padding: 6px 10px;
+            background: #f3eeff;
+            color: #555;
+            font-weight: 600;
+            border-bottom: 1px solid #e0d0ff;
+        }
+        .mini-items-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #f0eaff;
+        }
+        .mini-items-table tr:last-child td { border-bottom: none; }
+
+        .empty-admin { text-align: center; padding: 60px 0; color: #aaa; font-size: 17px; }
+    </style>
+</head>
+<body>
+    <div class="top">
+        <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
+        <div class="info">
+            <a href="/about">О нас</a>
+            <a href="/catalog">Каталог</a>
+        </div>
+        <div class="top-right">
+            <div class="dropdown">
+                <span class="register">Профиль ▼</span>
+                <div class="dropdown-menu">
+                    <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                    <hr>
+                    <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                    <a href="{{ url_for('about') }}">Пользователи</a>
+                    <hr>
+                    <a href="{{ url_for('logout') }}">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-page">
+        <h1 class="page-title"><i class="fas fa-clipboard-list" style="color:#7c3aed;"></i> Управление заказами</h1>
+
+        <div class="admin-controls">
+            <input type="text" id="search-input" class="search-admin" placeholder="Поиск по номеру, имени, email...">
+            <select id="status-filter" class="filter-status-select">
+                <option value="">Все статусы</option>
+                <option value="Новый">Новый</option>
+                <option value="В обработке">В обработке</option>
+                <option value="Отправлен">Отправлен</option>
+                <option value="Выполнен">Выполнен</option>
+                <option value="Отменён">Отменён</option>
+            </select>
+            <span class="orders-count" id="orders-count">Всего: {{ orders | length }}</span>
+        </div>
+
+        {% if not orders %}
+            <div class="empty-admin">
+                <i class="fas fa-inbox" style="font-size:48px; display:block; margin-bottom:14px;"></i>
+                Заказов пока нет
+            </div>
+        {% else %}
+        <div class="admin-table-wrap">
+            <table class="admin-table" id="admin-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>№</th>
+                        <th>Дата</th>
+                        <th>Покупатель</th>
+                        <th>Контакт</th>
+                        <th>Город</th>
+                        <th>Товаров</th>
+                        <th>Сумма</th>
+                        <th>Статус</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr class="order-main-row"
+                        data-order-id="{{ order.id }}"
+                        data-status="{{ order.status }}"
+                        data-search="{{ order.id }} {{ order.last_name }} {{ order.first_name }} {{ order.patronymic }} {{ order.email }} {{ order.phone }} {{ order.city }}">
+                        <td>
+                            <button class="expand-btn" id="expand-{{ order.id }}"
+                                    onclick="toggleDetails({{ order.id }})">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </td>
+                        <td><strong>#{{ order.id }}</strong></td>
+                        <td style="white-space:nowrap; color:#888; font-size:13px;">
+                            {{ order.created_at.strftime('%d.%m.%Y') }}<br>
+                            {{ order.created_at.strftime('%H:%M') }}
+                        </td>
+                        <td>
+                            {{ order.last_name }} {{ order.first_name }}<br>
+                            <span style="font-size:12px;color:#888;">{{ order.patronymic }}</span>
+                        </td>
+                        <td style="font-size:13px;">
+                            {{ order.phone }}<br>
+                            <span style="color:#7c3aed;">{{ order.email }}</span>
+                        </td>
+                        <td style="font-size:13px;">{{ order.city }}</td>
+                        <td style="text-align:center;">{{ order.items | length }}</td>
+                        <td style="font-weight:700; color:#28a745; white-space:nowrap;">{{ order.total_price | int }} ₽</td>
+                        <td>
+                            <span class="status-badge status-{{ order.status.replace(' ', '.') }}" id="badge-{{ order.id }}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <select class="status-select-inline" id="sel-{{ order.id }}">
+                                    {% for s in ['Новый', 'В обработке', 'Отправлен', 'Выполнен', 'Отменён'] %}
+                                        <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button class="save-status-btn" id="savebtn-{{ order.id }}"
+                                        onclick="saveStatus({{ order.id }})">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Строка деталей -->
+                    <tr class="order-detail-row" id="detail-row-{{ order.id }}">
+                        <td colspan="10">
+                            <div class="order-detail-inner" id="detail-{{ order.id }}">
+                                <div class="detail-grid">
+                                    <div class="detail-section">
+                                        <h4><i class="fas fa-user"></i> Покупатель</h4>
+                                        <p>
+                                            {{ order.last_name }} {{ order.first_name }} {{ order.patronymic }}<br>
+                                            {{ order.phone }}<br>
+                                            {{ order.email }}<br>
+                                            {{ order.org_type }}{% if order.company %} — {{ order.company }}{% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="detail-section">
+                                        <h4><i class="fas fa-map-marker-alt"></i> Адрес</h4>
+                                        <p>
+                                            {{ order.country }}, {{ order.region }}<br>
+                                            г. {{ order.city }}{% if order.postal_code %}, {{ order.postal_code }}{% endif %}<br>
+                                            {{ order.address }}
+                                        </p>
+                                    </div>
+                                    {% if order.comment %}
+                                    <div class="detail-section">
+                                        <h4><i class="fas fa-comment"></i> Комментарий</h4>
+                                        <p>{{ order.comment }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <table class="mini-items-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Товар</th>
+                                            <th>Арт.</th>
+                                            <th>Цвет / Размер</th>
+                                            <th>Кол-во</th>
+                                            <th>Цена</th>
+                                            <th>Сумма</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in order.items %}
+                                        <tr>
+                                            <td>{{ item.variant.product.name }}</td>
+                                            <td style="color:#999;">{{ item.variant.product.article }}</td>
+                                            <td>{{ item.variant.color or 'Обычный' }} / {{ item.variant.size or 'Универсальный' }}</td>
+                                            <td>{{ item.quantity }} шт.</td>
+                                            <td>{{ item.price_per_unit | int }} ₽</td>
+                                            <td><strong>{{ (item.price_per_unit * item.quantity) | int }} ₽</strong></td>
+                                        </tr>
+                                        {% endfor %}
+                                        <tr style="background:#f3eeff;">
+                                            <td colspan="5" style="text-align:right; font-weight:700; padding-right:16px;">Итого:</td>
+                                            <td style="font-weight:700; color:#28a745;">{{ order.total_price | int }} ₽</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Раскрытие деталей
+        function toggleDetails(id) {
+            const detail = document.getElementById('detail-' + id);
+            const btn = document.getElementById('expand-' + id);
+            const isOpen = detail.classList.contains('open');
+            detail.classList.toggle('open', !isOpen);
+            btn.classList.toggle('open', !isOpen);
+        }
+
+        // Сохранение статуса
+        async function saveStatus(orderId) {
+            const sel = document.getElementById('sel-' + orderId);
+            const btn = document.getElementById('savebtn-' + orderId);
+            const badge = document.getElementById('badge-' + orderId);
+            const newStatus = sel.value;
+
+            try {
+                const res = await fetch(`/admin/orders/${orderId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Ошибка сервера');
+
+                // Обновить бейдж
+                badge.textContent = newStatus;
+                badge.className = 'status-badge status-' + newStatus.replace(' ', '.');
+
+                // Обновить data-status строки для фильтрации
+                const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+                if (row) row.setAttribute('data-status', newStatus);
+
+                btn.classList.add('saved');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    btn.classList.remove('saved');
+                    btn.innerHTML = '<i class="fas fa-save"></i>';
+                }, 2000);
+            } catch (err) {
+                alert('Ошибка: ' + (err.message || 'Не удалось сохранить статус'));
+            }
+        }
+
+        // Поиск + фильтр по статусу
+        function applyFilters() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const rows = document.querySelectorAll('tr.order-main-row');
+            let visible = 0;
+
+            rows.forEach(row => {
+                const orderId = row.getAttribute('data-order-id');
+                const searchText = row.getAttribute('data-search').toLowerCase();
+                const status = row.getAttribute('data-status');
+                const detailRow = document.getElementById('detail-row-' + orderId);
+
+                const matchesSearch = !query || searchText.includes(query);
+                const matchesStatus = !statusFilter || status === statusFilter;
+
+                const show = matchesSearch && matchesStatus;
+                row.classList.toggle('hidden-row', !show);
+                detailRow.classList.toggle('hidden-row', !show);
+                if (show) visible++;
+            });
+
+            document.getElementById('orders-count').textContent = `Показано: ${visible}`;
+        }
+
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+        document.getElementById('status-filter').addEventListener('change', applyFilters);
+    </script>
+</body>
+</html>

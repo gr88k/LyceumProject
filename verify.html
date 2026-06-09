@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak — Подтверждение email</title>
+    <link rel="stylesheet" href="/css/register.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .code-inputs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .code-inputs input {
+            width: 52px;
+            height: 60px;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            font-family: 'PT Serif', serif;
+            border-radius: 10px;
+            border: 2px solid #000;
+            padding: 0;
+            caret-color: transparent;
+        }
+        .code-inputs input:focus {
+            outline: none;
+            border-color: #10b981;
+            background: #f0fff8;
+        }
+        .code-inputs input.filled {
+            background: #f0fff8;
+            border-color: #10b981;
+        }
+        .verify-title {
+            font-family: 'PT Serif', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .verify-sub {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 15px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .verify-sub strong { color: #111; }
+        .error-msg {
+            color: #dc3545;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 14px;
+            text-align: center;
+            margin-top: -10px;
+        }
+        .resend-link {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 14px;
+            color: #888;
+            text-align: center;
+            margin-top: 4px;
+        }
+        .resend-link a {
+            color: #10b981 !important;
+            text-decoration: underline;
+            font-size: 14px !important;
+            width: auto !important;
+        }
+        .timer-text { color: #aaa; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
+            <div class="info">
+                <a href="/about">О нас</a>
+                <a href="/catalog">Каталог</a>
+            </div>
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text" name="q" placeholder="Поиск товаров..." class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+            <a href="/register" class="register">Регистрация</a>
+        </div>
+
+        <div class="formContainer">
+            <button onclick="window.location.href='/register'" class="btn-back">←</button>
+
+            <div class="inputForms">
+                <p class="verify-title">Подтвердите ваш email</p>
+                <p class="verify-sub">
+                    Мы отправили 6-значный код на<br>
+                    <strong>{{ email }}</strong>
+                </p>
+
+                {% if error %}
+                    <p class="error-msg">{{ error }}</p>
+                {% endif %}
+
+                <form method="POST" action="/verify" id="verify-form">
+                    <input type="hidden" name="email" value="{{ email }}">
+                    <input type="hidden" name="code" id="code-hidden">
+
+                    <div class="code-inputs" id="code-inputs">
+                        <input type="text" maxlength="1" class="digit-input" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                        <input type="text" maxlength="1" class="digit-input" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                        <input type="text" maxlength="1" class="digit-input" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                        <input type="text" maxlength="1" class="digit-input" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                        <input type="text" maxlength="1" class="digit-input" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                        <input type="text" maxlength="1" class="digit-input" inputmode="numeric" pattern="[0-9]" autocomplete="off">
+                    </div>
+
+                    <button type="submit" class="sbm-btn" id="submit-btn">Подтвердить</button>
+                </form>
+
+                <p class="resend-link">
+                    Не пришло письмо?
+                    <span id="resend-wrap">
+                        <span class="timer-text">Повторная отправка через <span id="countdown">60</span> сек.</span>
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.digit-input');
+
+        inputs.forEach((input, i) => {
+            input.addEventListener('input', () => {
+                // Оставляем только цифры
+                input.value = input.value.replace(/\D/g, '').slice(-1);
+                if (input.value) {
+                    input.classList.add('filled');
+                    if (i < inputs.length - 1) inputs[i + 1].focus();
+                } else {
+                    input.classList.remove('filled');
+                }
+                checkComplete();
+            });
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Backspace' && !input.value && i > 0) {
+                    inputs[i - 1].focus();
+                    inputs[i - 1].value = '';
+                    inputs[i - 1].classList.remove('filled');
+                }
+            });
+
+            // Вставка из буфера (например, из SMS)
+            input.addEventListener('paste', e => {
+                e.preventDefault();
+                const pasted = (e.clipboardData || window.clipboardData)
+                    .getData('text').replace(/\D/g, '').slice(0, 6);
+                pasted.split('').forEach((ch, idx) => {
+                    if (inputs[idx]) {
+                        inputs[idx].value = ch;
+                        inputs[idx].classList.add('filled');
+                    }
+                });
+                if (inputs[pasted.length - 1]) inputs[pasted.length - 1].focus();
+                checkComplete();
+            });
+        });
+
+        function checkComplete() {
+            const code = Array.from(inputs).map(i => i.value).join('');
+            document.getElementById('code-hidden').value = code;
+            if (code.length === 6) {
+                // Автосабмит
+                document.getElementById('verify-form').submit();
+            }
+        }
+
+        // Таймер повторной отправки
+        let seconds = 60;
+        const countdown = document.getElementById('countdown');
+        const resendWrap = document.getElementById('resend-wrap');
+        const timer = setInterval(() => {
+            seconds--;
+            countdown.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(timer);
+                resendWrap.innerHTML = `<a href="/resend-code?email={{ email }}">Отправить повторно</a>`;
+            }
+        }, 1000);
+
+        // Фокус на первый инпут
+        inputs[0].focus();
+    </script>
+</body>
+</html>

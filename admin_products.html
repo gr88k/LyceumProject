@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak — Управление товарами</title>
+    <link rel="stylesheet" href="/css/checkout.css">
+    <link rel="stylesheet" href="/css/admin_products.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="top">
+    <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
+    <div class="info">
+        <a href="/catalog">Каталог</a>
+    </div>
+    <div class="top-right">
+        <div class="dropdown">
+            <span class="register">Профиль ▼</span>
+            <div class="dropdown-menu">
+                <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                <hr>
+                <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                <a href="{{ url_for('admin_products') }}">Товары</a>
+                <a href="{{ url_for('about') }}">Пользователи</a>
+                <hr>
+                <a href="{{ url_for('logout') }}">Выйти</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ap-page">
+
+    <div class="ap-header-row">
+        <h1 class="page-title"><i class="fas fa-boxes" style="color:#7c3aed;"></i> Управление товарами</h1>
+        <button class="ap-new-btn" id="btn-new-product">
+            <i class="fas fa-plus"></i> Новый товар
+        </button>
+    </div>
+
+    <!-- Поиск и фильтр -->
+    <div class="ap-controls">
+        <input type="text" id="ap-search" class="ap-search" placeholder="Поиск по названию, артикулу...">
+        <select id="ap-cat-filter" class="ap-filter-select">
+            <option value="">Все категории</option>
+            <option value="cap">Бейсболки</option>
+            <option value="hat">Шапки</option>
+        </select>
+        <select id="ap-vis-filter" class="ap-filter-select">
+            <option value="">Все товары</option>
+            <option value="visible">Только видимые</option>
+            <option value="hidden">Только скрытые</option>
+        </select>
+        <span class="ap-count" id="ap-count">Всего: {{ products | length }}</span>
+    </div>
+
+    <!-- Таблица товаров -->
+    <div class="ap-table-wrap">
+        <table class="ap-table" id="ap-table">
+            <thead>
+                <tr>
+                    <th style="width:60px"></th>
+                    <th>Название / Артикул</th>
+                    <th>Категория</th>
+                    <th>Цена</th>
+                    <th>Вариаций</th>
+                    <th>Остаток</th>
+                    <th>Описание</th>
+                    <th>Видимость</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr class="ap-row {% if product.is_hidden %}ap-hidden-product{% endif %}"
+                    data-id="{{ product.id }}"
+                    data-name="{{ product.name | lower }}"
+                    data-article="{{ product.article | lower }}"
+                    data-category="{{ product.category }}"
+                    data-hidden="{{ 'true' if product.is_hidden else 'false' }}">
+                    <td>
+                        <img src="{{ product.main_image or '/css/data/cap.png' }}"
+                             alt="{{ product.name }}" class="ap-thumb"
+                             onerror="this.src='/css/data/cap.png'">
+                    </td>
+                    <td>
+                        <span class="ap-prod-name">{{ product.name }}</span><br>
+                        <span class="ap-prod-article">Арт: {{ product.article }}</span>
+                    </td>
+                    <td>
+                        <span class="ap-cat-badge ap-cat-{{ product.category }}">
+                            {{ 'Шапка' if product.category == 'hat' else 'Бейсболка' }}
+                        </span>
+                    </td>
+                    <td class="ap-price-cell">{{ product.price | int }} ₽</td>
+                    <td class="ap-center">{{ product.variants | length }}</td>
+                    <td class="ap-center">
+                        {% set total_stock = product.variants | sum(attribute='stock') %}
+                        <span class="ap-stock {% if total_stock == 0 %}ap-stock-zero{% endif %}">
+                            {{ total_stock }}
+                        </span>
+                    </td>
+                    <td class="ap-center">
+                        {% if product.description %}
+                            <i class="fas fa-check-circle" style="color:#28a745;" title="{{ product.description[:60] }}..."></i>
+                        {% else %}
+                            <i class="fas fa-minus-circle" style="color:#ccc;"></i>
+                        {% endif %}
+                    </td>
+                    <td class="ap-center">
+                        <button class="ap-vis-btn {% if product.is_hidden %}ap-vis-hidden{% else %}ap-vis-shown{% endif %}"
+                                onclick="toggleHidden({{ product.id }}, this)"
+                                title="{{ 'Скрыт — нажмите чтобы показать' if product.is_hidden else 'Виден — нажмите чтобы скрыть' }}">
+                            <i class="fas {{ 'fa-eye-slash' if product.is_hidden else 'fa-eye' }}"></i>
+                        </button>
+                    </td>
+                    <td>
+                        <button class="ap-edit-btn" onclick="openEdit({{ product.id }})">
+                            <i class="fas fa-pen"></i> Изменить
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+<!-- ============================
+     МОДАЛЬНОЕ ОКНО РЕДАКТИРОВАНИЯ
+     ============================ -->
+<div id="edit-modal" class="ap-modal">
+    <div class="ap-modal-content">
+        <div class="ap-modal-header">
+            <h2 id="modal-title"><i class="fas fa-pen"></i> Редактирование товара</h2>
+            <span class="ap-modal-close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="ap-modal-body">
+
+            <input type="hidden" id="edit-product-id">
+
+            <!-- Основные поля -->
+            <div class="ap-form-section">
+                <div class="ap-section-title">Основные данные</div>
+                <div class="ap-fields-grid">
+                    <div class="ap-field">
+                        <label>Название <span class="req">*</span></label>
+                        <input type="text" id="edit-name" class="ap-input" placeholder="Название товара">
+                    </div>
+                    <div class="ap-field">
+                        <label>Артикул <span class="req">*</span></label>
+                        <input type="text" id="edit-article" class="ap-input" placeholder="BK123456">
+                    </div>
+                    <div class="ap-field">
+                        <label>Категория</label>
+                        <select id="edit-category" class="ap-input ap-select">
+                            <option value="cap">Бейсболка</option>
+                            <option value="hat">Шапка</option>
+                        </select>
+                    </div>
+                    <div class="ap-field">
+                        <label>Оптовая цена (₽) <span class="req">*</span></label>
+                        <input type="number" id="edit-price" class="ap-input" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="ap-field ap-field-full">
+                    <label>Описание <span class="ap-optional">(необязательно)</span></label>
+                    <textarea id="edit-description" class="ap-input ap-textarea"
+                              placeholder="Напишите описание товара. Если оставить пустым, описание не будет отображаться на странице товара."></textarea>
+                </div>
+                <div class="ap-field ap-field-inline">
+                    <label class="ap-checkbox-label">
+                        <input type="checkbox" id="edit-hidden" class="ap-checkbox">
+                        <span>Скрыть товар из каталога</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Вариации -->
+            <div class="ap-form-section">
+                <div class="ap-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Вариации (цвет / размер / остаток)</span>
+                    <button class="ap-add-variant-btn" onclick="addVariantRow()">
+                        <i class="fas fa-plus"></i> Добавить
+                    </button>
+                </div>
+                <div class="variants-header">
+                    <span>Цвет</span><span>Размер</span><span>Остаток</span><span></span>
+                </div>
+                <div id="variants-list"></div>
+            </div>
+
+        </div>
+        <div class="ap-modal-footer">
+            <span id="modal-save-status"></span>
+            <div style="display:flex; gap:12px;">
+                <button class="ap-cancel-btn" onclick="closeModal()">Отмена</button>
+                <button class="ap-save-btn" id="modal-save-btn" onclick="saveProduct()">
+                    <i class="fas fa-save"></i> Сохранить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- ============================
+     МОДАЛЬНОЕ ОКНО НОВОГО ТОВАРА
+     ============================ -->
+<div id="new-modal" class="ap-modal">
+    <div class="ap-modal-content">
+        <div class="ap-modal-header">
+            <h2><i class="fas fa-plus-circle"></i> Новый товар</h2>
+            <span class="ap-modal-close" onclick="closeNewModal()">&times;</span>
+        </div>
+        <div class="ap-modal-body">
+            <div class="ap-form-section">
+                <div class="ap-fields-grid">
+                    <div class="ap-field">
+                        <label>Название <span class="req">*</span></label>
+                        <input type="text" id="new-name" class="ap-input" placeholder="Название товара">
+                    </div>
+                    <div class="ap-field">
+                        <label>Артикул <span class="req">*</span></label>
+                        <input type="text" id="new-article" class="ap-input" placeholder="BK123456">
+                    </div>
+                    <div class="ap-field">
+                        <label>Категория</label>
+                        <select id="new-category" class="ap-input ap-select">
+                            <option value="cap">Бейсболка</option>
+                            <option value="hat">Шапка</option>
+                        </select>
+                    </div>
+                    <div class="ap-field">
+                        <label>Цена (₽) <span class="req">*</span></label>
+                        <input type="number" id="new-price" class="ap-input" min="0" step="0.01" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="ap-field ap-field-full">
+                    <label>Описание <span class="ap-optional">(необязательно)</span></label>
+                    <textarea id="new-description" class="ap-input ap-textarea" placeholder="Описание товара..."></textarea>
+                </div>
+            </div>
+            <div class="ap-form-section">
+                <div class="ap-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span>Вариации</span>
+                    <button class="ap-add-variant-btn" onclick="addNewVariantRow()">
+                        <i class="fas fa-plus"></i> Добавить
+                    </button>
+                </div>
+                <div class="variants-header">
+                    <span>Цвет</span><span>Размер</span><span>Остаток</span><span></span>
+                </div>
+                <div id="new-variants-list"></div>
+            </div>
+        </div>
+        <div class="ap-modal-footer">
+            <span id="new-save-status"></span>
+            <div style="display:flex; gap:12px;">
+                <button class="ap-cancel-btn" onclick="closeNewModal()">Отмена</button>
+                <button class="ap-save-btn" onclick="createProduct()">
+                    <i class="fas fa-plus"></i> Создать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+// =================== ФИЛЬТРАЦИЯ ТАБЛИЦЫ ===================
+function applyFilters() {
+    const q = document.getElementById('ap-search').value.toLowerCase();
+    const cat = document.getElementById('ap-cat-filter').value;
+    const vis = document.getElementById('ap-vis-filter').value;
+    const rows = document.querySelectorAll('.ap-row');
+    let count = 0;
+    rows.forEach(row => {
+        const name = row.dataset.name;
+        const article = row.dataset.article;
+        const category = row.dataset.category;
+        const hidden = row.dataset.hidden;
+
+        const matchQ = !q || name.includes(q) || article.includes(q);
+        const matchCat = !cat || category === cat;
+        const matchVis = !vis || (vis === 'hidden' && hidden === 'true') || (vis === 'visible' && hidden === 'false');
+
+        const show = matchQ && matchCat && matchVis;
+        row.style.display = show ? '' : 'none';
+        if (show) count++;
+    });
+    document.getElementById('ap-count').textContent = `Показано: ${count}`;
+}
+document.getElementById('ap-search').addEventListener('input', applyFilters);
+document.getElementById('ap-cat-filter').addEventListener('change', applyFilters);
+document.getElementById('ap-vis-filter').addEventListener('change', applyFilters);
+
+// =================== СКРЫТЬ / ПОКАЗАТЬ ===================
+async function toggleHidden(productId, btn) {
+    try {
+        const res = await fetch(`/admin/products/${productId}/toggle-hidden`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error();
+
+        const row = document.querySelector(`tr[data-id="${productId}"]`);
+        const isHidden = data.is_hidden;
+
+        row.dataset.hidden = isHidden ? 'true' : 'false';
+        row.classList.toggle('ap-hidden-product', isHidden);
+
+        btn.className = 'ap-vis-btn ' + (isHidden ? 'ap-vis-hidden' : 'ap-vis-shown');
+        btn.querySelector('i').className = 'fas ' + (isHidden ? 'fa-eye-slash' : 'fa-eye');
+        btn.title = isHidden ? 'Скрыт — нажмите чтобы показать' : 'Виден — нажмите чтобы скрыть';
+    } catch {
+        alert('Ошибка при изменении видимости');
+    }
+}
+
+// =================== ОТКРЫТЬ РЕДАКТИРОВАНИЕ ===================
+async function openEdit(productId) {
+    try {
+        const res = await fetch(`/admin/products/${productId}`);
+        const p = await res.json();
+
+        document.getElementById('edit-product-id').value = p.id;
+        document.getElementById('edit-name').value = p.name;
+        document.getElementById('edit-article').value = p.article;
+        document.getElementById('edit-category').value = p.category;
+        document.getElementById('edit-price').value = p.price;
+        document.getElementById('edit-description').value = p.description;
+        document.getElementById('edit-hidden').checked = p.is_hidden;
+        document.getElementById('modal-save-status').textContent = '';
+
+        // Вариации
+        const list = document.getElementById('variants-list');
+        list.innerHTML = '';
+        p.variants.forEach(v => addVariantRow(v));
+
+        document.getElementById('edit-modal').style.display = 'flex';
+    } catch {
+        alert('Не удалось загрузить товар');
+    }
+}
+
+function closeModal() {
+    document.getElementById('edit-modal').style.display = 'none';
+}
+
+// =================== СТРОКА ВАРИАЦИИ (РЕДАКТИРОВАНИЕ) ===================
+let variantRowId = 0;
+function addVariantRow(data = null) {
+    const list = document.getElementById('variants-list');
+    const rid = ++variantRowId;
+    const div = document.createElement('div');
+    div.className = 'variant-row';
+    div.id = `vrow-${rid}`;
+    div.dataset.variantId = data ? data.id : '';
+    div.dataset.isNew = data ? 'false' : 'true';
+
+    div.innerHTML = `
+        <input type="text" class="ap-input v-color" placeholder="Цвет" value="${data ? (data.color || '') : ''}">
+        <input type="text" class="ap-input v-size"  placeholder="Размер" value="${data ? (data.size || '') : ''}">
+        <input type="number" class="ap-input v-stock" placeholder="0" min="0" value="${data ? data.stock : 0}">
+        <button class="ap-del-variant-btn" onclick="deleteVariantRow('vrow-${rid}', ${data ? data.id : 0})">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    list.appendChild(div);
+}
+
+const toDeleteVariants = [];
+function deleteVariantRow(rowId, variantId) {
+    if (variantId) toDeleteVariants.push(variantId);
+    document.getElementById(rowId).remove();
+}
+
+// =================== СОХРАНИТЬ ТОВАР ===================
+async function saveProduct() {
+    const productId = document.getElementById('edit-product-id').value;
+    const statusEl = document.getElementById('modal-save-status');
+    statusEl.textContent = '';
+
+    const variantRows = document.querySelectorAll('#variants-list .variant-row');
+    const variants = [];
+
+    // Удалённые вариации
+    toDeleteVariants.forEach(id => variants.push({ id, _delete: true }));
+
+    variantRows.forEach(row => {
+        const isNew = row.dataset.isNew === 'true';
+        const variantId = parseInt(row.dataset.variantId) || null;
+        const color = row.querySelector('.v-color').value.trim();
+        const size = row.querySelector('.v-size').value.trim();
+        const stock = parseInt(row.querySelector('.v-stock').value) || 0;
+
+        if (isNew) {
+            variants.push({ _new: true, color, size, stock });
+        } else if (variantId) {
+            variants.push({ id: variantId, color, size, stock });
+        }
+    });
+
+    const payload = {
+        name: document.getElementById('edit-name').value.trim(),
+        article: document.getElementById('edit-article').value.trim(),
+        category: document.getElementById('edit-category').value,
+        price: document.getElementById('edit-price').value,
+        description: document.getElementById('edit-description').value.trim(),
+        is_hidden: document.getElementById('edit-hidden').checked,
+        variants
+    };
+
+    if (!payload.name || !payload.article || !payload.price) {
+        statusEl.textContent = 'Заполните обязательные поля';
+        statusEl.style.color = '#c0003a';
+        return;
+    }
+
+    try {
+        const res = await fetch(`/admin/products/${productId}/update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message);
+
+        statusEl.textContent = '✓ Сохранено';
+        statusEl.style.color = '#28a745';
+
+        // Обновить строку в таблице без перезагрузки
+        const row = document.querySelector(`tr[data-id="${productId}"]`);
+        if (row) {
+            row.querySelector('.ap-prod-name').textContent = payload.name;
+            row.dataset.name = payload.name.toLowerCase();
+            row.dataset.hidden = payload.is_hidden ? 'true' : 'false';
+            row.classList.toggle('ap-hidden-product', payload.is_hidden);
+            row.querySelector('.ap-price-cell').textContent = parseInt(payload.price) + ' ₽';
+            const visBtn = row.querySelector('.ap-vis-btn');
+            visBtn.className = 'ap-vis-btn ' + (payload.is_hidden ? 'ap-vis-hidden' : 'ap-vis-shown');
+            visBtn.querySelector('i').className = 'fas ' + (payload.is_hidden ? 'fa-eye-slash' : 'fa-eye');
+        }
+
+        setTimeout(closeModal, 800);
+    } catch (err) {
+        statusEl.textContent = 'Ошибка: ' + err.message;
+        statusEl.style.color = '#c0003a';
+    }
+}
+
+// =================== НОВЫЙ ТОВАР ===================
+document.getElementById('btn-new-product').addEventListener('click', () => {
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-article').value = '';
+    document.getElementById('new-price').value = '';
+    document.getElementById('new-description').value = '';
+    document.getElementById('new-variants-list').innerHTML = '';
+    document.getElementById('new-save-status').textContent = '';
+    document.getElementById('new-modal').style.display = 'flex';
+});
+
+function closeNewModal() {
+    document.getElementById('new-modal').style.display = 'none';
+}
+
+let newVariantId = 0;
+function addNewVariantRow() {
+    const list = document.getElementById('new-variants-list');
+    const rid = ++newVariantId;
+    const div = document.createElement('div');
+    div.className = 'variant-row';
+    div.innerHTML = `
+        <input type="text" class="ap-input v-color" placeholder="Цвет" value="">
+        <input type="text" class="ap-input v-size"  placeholder="Размер" value="">
+        <input type="number" class="ap-input v-stock" placeholder="0" min="0" value="0">
+        <button class="ap-del-variant-btn" onclick="this.parentElement.remove()">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    list.appendChild(div);
+}
+
+async function createProduct() {
+    const statusEl = document.getElementById('new-save-status');
+    statusEl.textContent = '';
+
+    const variants = [];
+    document.querySelectorAll('#new-variants-list .variant-row').forEach(row => {
+        variants.push({
+            _new: true,
+            color: row.querySelector('.v-color').value.trim(),
+            size: row.querySelector('.v-size').value.trim(),
+            stock: parseInt(row.querySelector('.v-stock').value) || 0
+        });
+    });
+
+    const payload = {
+        name: document.getElementById('new-name').value.trim(),
+        article: document.getElementById('new-article').value.trim(),
+        category: document.getElementById('new-category').value,
+        price: document.getElementById('new-price').value,
+        description: document.getElementById('new-description').value.trim(),
+        variants
+    };
+
+    if (!payload.name || !payload.article || !payload.price) {
+        statusEl.textContent = 'Заполните обязательные поля';
+        statusEl.style.color = '#c0003a';
+        return;
+    }
+
+    try {
+        const res = await fetch('/admin/products/new', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message);
+
+        statusEl.textContent = '✓ Товар создан';
+        statusEl.style.color = '#28a745';
+        setTimeout(() => { closeNewModal(); location.reload(); }, 800);
+    } catch (err) {
+        statusEl.textContent = 'Ошибка: ' + err.message;
+        statusEl.style.color = '#c0003a';
+    }
+}
+
+// Закрытие модалок по клику вне
+window.addEventListener('click', e => {
+    if (e.target.id === 'edit-modal') closeModal();
+    if (e.target.id === 'new-modal') closeNewModal();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f0f0;font-family:'PT Sans',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f0;padding:30px 0;">
+<tr><td align="center">
+<table width="620" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.1);">
+
+  <!-- Шапка -->
+  <tr><td style="background:#111111;padding:28px 36px;">
+    <span style="font-family:'PT Serif',Georgia,serif;font-size:26px;font-weight:bold;color:#ffffff;">UrbanPeak</span>
+    <span style="font-size:14px;color:#aaa;margin-left:12px;">оптовый поставщик головных уборов</span>
+  </td></tr>
+
+  <!-- Заголовок -->
+  <tr><td style="padding:28px 36px 0;">
+    <h1 style="margin:0;font-family:'PT Serif',Georgia,serif;font-size:22px;color:#111;">{{title}}</h1>
+    <p style="margin:10px 0 0;font-size:15px;color:#555;">{{greeting}}</p>
+  </td></tr>
+
+  <!-- Детали заказа -->
+  <tr><td style="padding:20px 36px 0;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#333;">
+      <tr>
+        <td style="padding:6px 0;width:140px;"><strong>Номер заказа:</strong></td>
+        <td style="padding:6px 0;">{{order_id}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;"><strong>Дата:</strong></td>
+        <td style="padding:6px 0;">{{order_date}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;"><strong>Получатель:</strong></td>
+        <td style="padding:6px 0;">{{full_name}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;"><strong>Телефон:</strong></td>
+        <td style="padding:6px 0;">{{phone}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;"><strong>E-mail:</strong></td>
+        <td style="padding:6px 0;">{{email}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;"><strong>Организация:</strong></td>
+        <td style="padding:6px 0;">{{org}}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;vertical-align:top;"><strong>Адрес:</strong></td>
+        <td style="padding:6px 0;">{{address}}</td>
+      </tr>
+      {{comment_row}}
+    </table>
+  </td></tr>
+
+  <!-- Товары -->
+  <tr><td style="padding:20px 36px 0;">
+    <p style="margin:0 0 10px;font-weight:bold;font-size:15px;color:#111;">Состав заказа:</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#f5f5f5;">
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #ddd;">Товар</th>
+          <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #ddd;">Цвет / Размер</th>
+          <th style="padding:8px 12px;text-align:center;border-bottom:2px solid #ddd;">Кол-во</th>
+          <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #ddd;">Цена</th>
+          <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #ddd;">Сумма</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{rows}}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" style="padding:12px;text-align:right;font-weight:bold;border-top:2px solid #ddd;">Итого:</td>
+          <td style="padding:12px;text-align:right;font-weight:bold;font-size:16px;color:#28a745;border-top:2px solid #ddd;">{{total}} ₽</td>
+        </tr>
+      </tfoot>
+    </table>
+  </td></tr>
+
+  <!-- Футер -->
+  <tr><td style="padding:28px 36px;background:#f9f9f9;margin-top:20px;">
+    <p style="margin:0;font-size:13px;color:#999;text-align:center;">
+      UrbanPeak &middot; orders@urbanpeakshop.ru &middot; urbanpeakshop.ru
+    </p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>

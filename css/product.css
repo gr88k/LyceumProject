@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap');
 
 @import url('https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&display=swap');
@@ -162,9 +161,9 @@
 
 .bottom-info {
     display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    gap:150px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
 }
 
 .stats {
@@ -192,4 +191,348 @@
     background-color: #555;
     box-shadow: 0 5px 15px rgba(0,0,0,0.2);
     transform: scale(1.05);
+}
+
+/* До этого */
+
+/* Артикул под ценой */
+.product-article-under-price {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 15px;
+    color: #666;
+    margin-top: 8px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+/* Секция выбора оптовой матрицы */
+.variants-section {
+    margin-top: 10px;
+    margin-bottom: 25px;
+}
+
+.colors-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-height: 340px; /* Скролл, если цветов и размеров слишком много */
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Контейнер одного цвета */
+.color-group-box {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px 15px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.color-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+}
+
+.color-mini-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
+
+.color-name-text {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 17px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Контейнер строк размеров */
+.size-rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Строка конкретного размера внутри цвета */
+.size-order-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #fafafa;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+/* Если в поле введено значение больше нуля — строка подсвечивается */
+.size-order-row.selected-for-order {
+    background: #f1f9f3;
+    border-color: #28a745;
+}
+
+.size-name-zone {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Красивый шильдик размера */
+.size-badge {
+    display: inline-block;
+    background: #333;
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-family: 'PT Sans', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+    min-width: 45px;
+    text-align: center;
+}
+
+.size-stock-text {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 14px;
+    color: #666;
+}
+
+.stock-num {
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* Индивидуальный блок кнопок количества для каждой строки */
+.row-quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.row-qty-btn {
+    width: 26px;
+    height: 26px;
+    background-color: #444;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.row-qty-btn:hover {
+    background-color: #222;
+}
+
+/* Поле ввода количества для конкретной строки */
+.row-qty-input {
+    width: 45px;
+    height: 26px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #fff;
+    font-family: 'PT Sans', sans-serif;
+}
+
+.row-qty-input:focus {
+    border-color: #000;
+    outline: none;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.top .register{
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 50px;
+    cursor: pointer;
+    font-family: 'PT Serif', serif;
+    font-size: 32px;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    min-width: 100px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 100;
+    left: -10px;
+}
+
+.dropdown:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: background 0.2s;
+    font-family: 'PT Serif', serif;
+    font-size: 16px;
+}
+
+.dropdown-menu a:hover {
+    background: #f5f5f5;
+    font-family: 'PT Serif', serif;
+    font:16px;
+}
+
+.dropdown-menu hr {
+    margin: 5px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* --- Позиционирование иконки корзины в шапке --- */
+.header-user-block {
+    display: flex;
+    align-items: center;
+    gap: 25px; /* Расстояние между иконкой корзины и профилем */
+    padding-right: 50px; /* Отступ от правого края экрана */
+}
+
+.header-cart-link {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;         /* Сбрасываем глобальную ширину ссылок в 205px */
+    font-size: 26px !important;     /* Аккуратный размер иконки */
+    color: rgb(64, 64, 64) !important;
+    transition: color 0.2s ease, transform 0.2s ease;
+    cursor: pointer;
+}
+
+/* Эффект при наведении на корзину */
+.header-cart-link:hover {
+    color: #28a745 !important;     /* Окрашивается в зеленый бренд-цвет */
+    transform: scale(1.15);        /* Слегка увеличивается */
+}
+
+/* Корректировка кнопки Профиль/Регистрация, чтобы она не съезжала */
+.header-user-block .register {
+    width: auto !important;        /* Убираем жесткую ширину */
+    white-space: nowrap;           /* Защита от переноса текста */
+    padding: 0;
+    margin: 0;
+}
+/* ===== МОДАЛЬНОЕ ОКНО КОРЗИНЫ ===== */
+.cart-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    font-family: 'PT Sans', sans-serif;
+}
+.cart-modal-content {
+    background-color: #fefefe;
+    margin: 7% auto;
+    padding: 25px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 750px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+}
+.cart-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 12px;
+}
+.cart-modal-header h2 { margin: 0; font-size: 26px; font-weight: 700; color: #222; }
+.close-cart-btn { color: #aaa; font-size: 32px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+.close-cart-btn:hover { color: #ff4d4d; }
+.cart-modal-body { padding: 15px 0; max-height: 380px; overflow-y: auto; }
+.empty-cart-msg { text-align: center; color: #777; font-size: 18px; padding: 30px 0; }
+.cart-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+    gap: 15px;
+}
+.cart-item-img { width: 65px; height: 65px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
+.cart-item-details { flex: 2; display: flex; flex-direction: column; gap: 4px; }
+.cart-item-name { font-weight: bold; font-size: 16px; color: #111; }
+.cart-item-meta { font-size: 13px; color: #555; }
+.cart-item-article { font-size: 12px; color: #999; }
+.cart-item-qty { flex: 0.8; text-align: center; font-weight: bold; font-size: 15px; color: #333; }
+.cart-item-price { flex: 1; text-align: right; font-weight: bold; font-size: 16px; color: #28a745; }
+.cart-item-remove-btn {
+    background: none; border: none; color: #999;
+    font-size: 20px; cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+    padding: 0 10px;
+}
+.cart-item-remove-btn:hover { color: #ff4d4d; transform: scale(1.15); }
+.cart-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid #eee;
+    padding-top: 20px;
+    margin-top: 10px;
+}
+.cart-total { font-size: 22px; font-weight: bold; color: #222; }
+#cart-total-price { color: #28a745; }
+.checkout-btn {
+    background-color: #28a745;
+    color: white; border: none;
+    padding: 12px 28px; font-size: 16px; font-weight: bold;
+    border-radius: 30px; cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: 'PT Serif', serif;
+}
+.checkout-btn:hover { background-color: #218838; transform: scale(1.03); }
+
+/* ===== ОПИСАНИЕ ТОВАРА ===== */
+.product-description {
+    max-width: 450px;
+    margin-bottom: 20px;
+}
+.desc-title {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #444;
+    margin-bottom: 6px;
+}
+.desc-text {
+    font-family: 'PT Sans', sans-serif;
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    white-space: pre-wrap;
 }

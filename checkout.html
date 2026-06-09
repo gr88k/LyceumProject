@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Peak — Оформление заказа</title>
+    <link rel="stylesheet" href="/css/checkout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Шапка -->
+    <div class="top">
+        <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
+        <div class="info">
+            <a href="/about">О нас</a>
+            <a href="/catalog">Каталог</a>
+        </div>
+        <div class="top-right">
+            {% if current_user.is_authenticated %}
+                <div class="dropdown">
+                    <span class="register">Профиль ▼</span>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                        <a href="{{ url_for('my_orders') }}">Мои заказы</a>
+                        {% if current_user.role == 'Admin' %}
+                            <hr>
+                            <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                        {% endif %}
+                        <hr>
+                        <a href="{{ url_for('logout') }}">Выйти</a>
+                    </div>
+                </div>
+            {% else %}
+                <a href="/register" class="register">Регистрация</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="checkout-page">
+        <h1 class="page-title">Оформление заказа</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                    <div class="flash flash-{{ cat }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/checkout" id="checkout-form">
+
+            <div class="checkout-grid">
+
+                <!-- Левая колонка: покупатель -->
+                <div class="form-card">
+                    <div class="card-title">Покупатель</div>
+
+                    <div class="form-row">
+                        <label>Имя <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <input type="text" name="first_name" placeholder="Ваше имя"
+                                   value="{{ form.get('first_name', '') }}" class="f-input">
+                            <span class="err-msg" id="err-first_name"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Отчество <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <input type="text" name="patronymic" placeholder="Ваше отчество"
+                                   value="{{ form.get('patronymic', '') }}" class="f-input">
+                            <span class="err-msg" id="err-patronymic"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Фамилия <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <input type="text" name="last_name" placeholder="Ваша фамилия"
+                                   value="{{ form.get('last_name', '') }}" class="f-input">
+                            <span class="err-msg" id="err-last_name"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Телефон <span class="req">*</span></label>
+                        <div class="input-wrap phone-wrap">
+                            <input type="tel" name="phone" id="phone-input" placeholder="8 (800) 000 00 00"
+                                   value="{{ form.get('phone', '') }}" class="f-input phone-input">
+                            <span class="err-msg" id="err-phone"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>E-Mail <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <input type="email" name="email" placeholder="example@gmail.com"
+                                   value="{{ form.get('email', current_user.email) }}" class="f-input">
+                            <span class="err-msg" id="err-email"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Тип организации <span class="req">*</span></label>
+                        <div class="input-wrap">
+                            <select name="org_type" class="f-input f-select">
+                                {% for opt in ['Магазин', 'ИП', 'ООО', 'Физлицо', 'Другое'] %}
+                                    <option value="{{ opt }}" {% if form.get('org_type', 'Магазин') == opt %}selected{% endif %}>{{ opt }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label>Компания</label>
+                        <div class="input-wrap">
+                            <input type="text" name="company" placeholder="Например, ООО"
+                                   value="{{ form.get('company', '') }}" class="f-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Правая колонка: адрес + доп. инфо -->
+                <div class="right-col">
+                    <div class="form-card">
+                        <div class="card-title">Адрес</div>
+
+                        <div class="form-row">
+                            <label>Страна <span class="req">*</span></label>
+                            <div class="input-wrap">
+                                <select name="country" id="country-select" class="f-input f-select">
+                                    <option value="Россия" {% if form.get('country','Россия')=='Россия' %}selected{% endif %}>Россия</option>
+                                    <option value="Беларусь" {% if form.get('country')=='Беларусь' %}selected{% endif %}>Беларусь</option>
+                                    <option value="Казахстан" {% if form.get('country')=='Казахстан' %}selected{% endif %}>Казахстан</option>
+                                    <option value="Другая" {% if form.get('country')=='Другая' %}selected{% endif %}>Другая</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>Регион <span class="req">*</span></label>
+                            <div class="input-wrap">
+                                <input type="text" name="region" placeholder="Регион / область"
+                                       value="{{ form.get('region', '') }}" class="f-input">
+                                <span class="err-msg" id="err-region"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>Город <span class="req">*</span></label>
+                            <div class="input-wrap">
+                                <input type="text" name="city" placeholder="Ваш город"
+                                       value="{{ form.get('city', '') }}" class="f-input">
+                                <span class="err-msg" id="err-city"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>Индекс</label>
+                            <div class="input-wrap">
+                                <input type="text" name="postal_code" placeholder="000000"
+                                       maxlength="6" value="{{ form.get('postal_code', '') }}" class="f-input">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label>Адрес <span class="req">*</span></label>
+                            <div class="input-wrap">
+                                <textarea name="address" class="f-input f-textarea" placeholder="Улица, дом, квартира">{{ form.get('address', '') }}</textarea>
+                                <span class="err-msg" id="err-address"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-card">
+                        <div class="card-title">Дополнительная информация</div>
+                        <p class="hint-text">Если Вам необходимы дополнительные услуги или указать какую-либо информацию, то напишите это в комментариях.</p>
+                        <textarea name="comment" class="f-input f-textarea" placeholder="Введите текст">{{ form.get('comment', '') }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Состав заказа -->
+            <div class="order-summary-card">
+                <div class="card-title">Ваш заказ</div>
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Цвет / Размер</th>
+                            <th>Кол-во</th>
+                            <th>Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>
+                                <span class="item-name">{{ item.name }}</span>
+                                <span class="item-article">Арт: {{ item.article }}</span>
+                            </td>
+                            <td>{{ item.color }} / {{ item.size }}</td>
+                            <td>{{ item.quantity }} шт.</td>
+                            <td class="item-price">{{ item.item_total | int }} ₽</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="total-label">Итого:</td>
+                            <td class="total-sum">{{ total_price | int }} ₽</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Согласие и кнопка -->
+            <div class="checkout-bottom">
+                <label class="agree-label">
+                    <input type="checkbox" name="agree" id="agree-cb">
+                    <span>Я согласен (-на) на <a href="#" class="agree-link">обработку моих персональных данных</a></span>
+                </label>
+                <button type="submit" class="confirm-btn" id="confirm-btn">
+                    Подтвердить заказ
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // Маска телефона
+        const phoneInput = document.getElementById('phone-input');
+        phoneInput.addEventListener('input', function() {
+            let val = this.value.replace(/\D/g, '');
+            if (val.startsWith('7') || val.startsWith('8')) val = val.slice(1);
+            val = val.slice(0, 10);
+            let formatted = '8';
+            if (val.length > 0) formatted += ' (' + val.slice(0, 3);
+            if (val.length >= 4) formatted += ') ' + val.slice(3, 6);
+            if (val.length >= 7) formatted += ' ' + val.slice(6, 8);
+            if (val.length >= 9) formatted += ' ' + val.slice(8, 10);
+            this.value = formatted;
+        });
+
+        // Клиентская валидация
+        document.getElementById('checkout-form').addEventListener('submit', function(e) {
+            const required = [
+                ['first_name', 'Введите имя'],
+                ['patronymic', 'Введите отчество'],
+                ['last_name', 'Введите фамилию'],
+                ['phone', 'Введите телефон'],
+                ['email', 'Введите e-mail'],
+                ['region', 'Введите регион'],
+                ['city', 'Введите город'],
+                ['address', 'Введите адрес']
+            ];
+
+            let hasErrors = false;
+            // Сбросить все ошибки
+            document.querySelectorAll('.err-msg').forEach(el => el.textContent = '');
+            document.querySelectorAll('.f-input').forEach(el => el.classList.remove('input-error'));
+
+            required.forEach(([name, msg]) => {
+                const el = this.elements[name];
+                if (!el || !el.value.trim()) {
+                    const errEl = document.getElementById('err-' + name);
+                    if (errEl) errEl.textContent = 'Поле обязательно для заполнения';
+                    if (el) el.classList.add('input-error');
+                    hasErrors = true;
+                }
+            });
+
+            if (!document.getElementById('agree-cb').checked) {
+                document.querySelector('.agree-label').classList.add('agree-error');
+                hasErrors = true;
+            } else {
+                document.querySelector('.agree-label').classList.remove('agree-error');
+            }
+
+            if (hasErrors) e.preventDefault();
+        });
+
+        // Снимать ошибку при вводе
+        document.querySelectorAll('.f-input').forEach(el => {
+            el.addEventListener('input', function() {
+                this.classList.remove('input-error');
+                const errEl = document.getElementById('err-' + this.name);
+                if (errEl) errEl.textContent = '';
+            });
+        });
+    </script>
+</body>
+</html>
