@@ -81,9 +81,9 @@
                     data-category="{{ product.category }}"
                     data-hidden="{{ 'true' if product.is_hidden else 'false' }}">
                     <td>
-                        <img src="{{ product.main_image or '/css/data/cap.png' }}"
+                        <img src="{{ product.main_image or '/static/images/products/cap.png' }}"
                              alt="{{ product.name }}" class="ap-thumb"
-                             onerror="this.src='/css/data/cap.png'">
+                             onerror="this.src='/static/images/products/cap.png'">
                     </td>
                     <td>
                         <span class="ap-prod-name">{{ product.name }}</span><br>
@@ -117,9 +117,14 @@
                         </button>
                     </td>
                     <td>
-                        <button class="ap-edit-btn" onclick="openEdit({{ product.id }})">
-                            <i class="fas fa-pen"></i> Изменить
-                        </button>
+                        <div style="display:flex;gap:6px;">
+                            <button class="ap-edit-btn" onclick="openEdit({{ product.id }})">
+                                <i class="fas fa-pen"></i> Изменить
+                            </button>
+                            <button class="ap-del-product-btn" onclick="deleteProduct({{ product.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -145,6 +150,26 @@
             <!-- Основные поля -->
             <div class="ap-form-section">
                 <div class="ap-section-title">Основные данные</div>
+
+                <!-- Главное изображение товара -->
+                <div class="ap-field ap-field-full" style="margin-bottom:18px;">
+                    <label>Главное изображение товара</label>
+                    <div class="img-upload-zone" id="main-img-zone">
+                        <div class="img-preview-wrap" id="main-img-preview">
+                            <img id="main-img-preview-img" src="/static/images/products/cap.png" alt="preview" class="img-preview-thumb">
+                            <div class="img-overlay-btns">
+                                <label class="img-overlay-btn img-change-btn" title="Заменить изображение">
+                                    <i class="fas fa-camera"></i> Заменить
+                                    <input type="file" id="main-img-input" accept="image/*" style="display:none;">
+                                </label>
+                                <button type="button" class="img-overlay-btn img-delete-btn" id="main-img-delete-btn" title="Удалить изображение">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="ap-fields-grid">
                     <div class="ap-field">
                         <label>Название <span class="req">*</span></label>
@@ -188,7 +213,7 @@
                     </button>
                 </div>
                 <div class="variants-header">
-                    <span>Цвет</span><span>Размер</span><span>Остаток</span><span></span>
+                    <span>Цвет</span><span>Размер</span><span>Остаток</span><span>Картинка</span><span></span>
                 </div>
                 <div id="variants-list"></div>
             </div>
@@ -254,7 +279,6 @@
                 <div class="variants-header">
                     <span>Цвет</span><span>Размер</span><span>Остаток</span><span></span>
                 </div>
-                <div id="new-variants-list"></div>
             </div>
         </div>
         <div class="ap-modal-footer">
@@ -279,15 +303,9 @@ function applyFilters() {
     const rows = document.querySelectorAll('.ap-row');
     let count = 0;
     rows.forEach(row => {
-        const name = row.dataset.name;
-        const article = row.dataset.article;
-        const category = row.dataset.category;
-        const hidden = row.dataset.hidden;
-
-        const matchQ = !q || name.includes(q) || article.includes(q);
-        const matchCat = !cat || category === cat;
-        const matchVis = !vis || (vis === 'hidden' && hidden === 'true') || (vis === 'visible' && hidden === 'false');
-
+        const matchQ   = !q   || row.dataset.name.includes(q) || row.dataset.article.includes(q);
+        const matchCat = !cat || row.dataset.category === cat;
+        const matchVis = !vis || (vis === 'hidden' && row.dataset.hidden === 'true') || (vis === 'visible' && row.dataset.hidden === 'false');
         const show = matchQ && matchCat && matchVis;
         row.style.display = show ? '' : 'none';
         if (show) count++;
@@ -301,69 +319,147 @@ document.getElementById('ap-vis-filter').addEventListener('change', applyFilters
 // =================== СКРЫТЬ / ПОКАЗАТЬ ===================
 async function toggleHidden(productId, btn) {
     try {
-        const res = await fetch(`/admin/products/${productId}/toggle-hidden`, { method: 'POST' });
+        const res  = await fetch(`/admin/products/${productId}/toggle-hidden`, { method: 'POST' });
         const data = await res.json();
         if (data.status !== 'success') throw new Error();
-
         const row = document.querySelector(`tr[data-id="${productId}"]`);
-        const isHidden = data.is_hidden;
+        row.dataset.hidden = data.is_hidden ? 'true' : 'false';
+        row.classList.toggle('ap-hidden-product', data.is_hidden);
+        btn.className = 'ap-vis-btn ' + (data.is_hidden ? 'ap-vis-hidden' : 'ap-vis-shown');
+        btn.querySelector('i').className = 'fas ' + (data.is_hidden ? 'fa-eye-slash' : 'fa-eye');
+    } catch { alert('Ошибка при изменении видимости'); }
+}
 
-        row.dataset.hidden = isHidden ? 'true' : 'false';
-        row.classList.toggle('ap-hidden-product', isHidden);
-
-        btn.className = 'ap-vis-btn ' + (isHidden ? 'ap-vis-hidden' : 'ap-vis-shown');
-        btn.querySelector('i').className = 'fas ' + (isHidden ? 'fa-eye-slash' : 'fa-eye');
-        btn.title = isHidden ? 'Скрыт — нажмите чтобы показать' : 'Виден — нажмите чтобы скрыть';
-    } catch {
-        alert('Ошибка при изменении видимости');
-    }
+// =================== УДАЛЕНИЕ ТОВАРА ===================
+async function deleteProduct(productId) {
+    if (!confirm('Удалить товар и все его изображения? Это действие необратимо.')) return;
+    try {
+        const res = await fetch(`/admin/products/${productId}/delete`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message);
+        document.querySelector(`tr[data-id="${productId}"]`).remove();
+        const count = document.querySelectorAll('.ap-row:not([style*="display: none"])').length;
+        document.getElementById('ap-count').textContent = `Показано: ${count}`;
+    } catch (err) { alert('Ошибка удаления: ' + err.message); }
 }
 
 // =================== ОТКРЫТЬ РЕДАКТИРОВАНИЕ ===================
+let currentProductId = null;
+
 async function openEdit(productId) {
+    currentProductId = productId;
     try {
         const res = await fetch(`/admin/products/${productId}`);
-        const p = await res.json();
+        const p   = await res.json();
 
-        document.getElementById('edit-product-id').value = p.id;
-        document.getElementById('edit-name').value = p.name;
-        document.getElementById('edit-article').value = p.article;
-        document.getElementById('edit-category').value = p.category;
-        document.getElementById('edit-price').value = p.price;
-        document.getElementById('edit-description').value = p.description;
-        document.getElementById('edit-hidden').checked = p.is_hidden;
+        document.getElementById('edit-product-id').value    = p.id;
+        document.getElementById('edit-name').value          = p.name;
+        document.getElementById('edit-article').value       = p.article;
+        document.getElementById('edit-category').value      = p.category;
+        document.getElementById('edit-price').value         = p.price;
+        document.getElementById('edit-description').value   = p.description;
+        document.getElementById('edit-hidden').checked      = p.is_hidden;
         document.getElementById('modal-save-status').textContent = '';
+
+        // Главное изображение
+        setupMainImageUI(p.id, p.main_image || null);
 
         // Вариации
         const list = document.getElementById('variants-list');
         list.innerHTML = '';
+        toDeleteVariants.length = 0;
         p.variants.forEach(v => addVariantRow(v));
 
         document.getElementById('edit-modal').style.display = 'flex';
-    } catch {
-        alert('Не удалось загрузить товар');
-    }
+    } catch { alert('Не удалось загрузить товар'); }
 }
 
-function closeModal() {
-    document.getElementById('edit-modal').style.display = 'none';
+function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+
+// =================== ГЛАВНОЕ ИЗОБРАЖЕНИЕ ===================
+function setupMainImageUI(productId, imageUrl) {
+    const previewImg = document.getElementById('main-img-preview-img');
+    const input      = document.getElementById('main-img-input');
+    const deleteBtn  = document.getElementById('main-img-delete-btn');
+    const DEFAULT    = '/static/images/products/cap.png';
+
+    // Показываем картинку (или дефолт)
+    previewImg.src = (imageUrl && imageUrl !== DEFAULT) ? imageUrl : DEFAULT;
+
+    // Скрываем кнопку удаления если уже дефолт
+    deleteBtn.style.display = (!imageUrl || imageUrl === DEFAULT) ? 'none' : 'flex';
+
+    // Новые обработчики (клонируем чтобы убрать старые)
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+
+    newInput.addEventListener('change', async () => {
+        const file = newInput.files[0];
+        if (!file) return;
+        const fd = new FormData();
+        fd.append('image', file);
+        try {
+            const res  = await fetch(`/admin/products/${productId}/upload-image`, { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.status !== 'success') throw new Error(data.message);
+            previewImg.src = data.url;
+            document.getElementById('main-img-delete-btn').style.display = 'flex';
+            const thumb = document.querySelector(`tr[data-id="${productId}"] .ap-thumb`);
+            if (thumb) thumb.src = data.url;
+        } catch (err) { alert('Ошибка загрузки: ' + err.message); }
+    });
+
+    const newDeleteBtn = deleteBtn.cloneNode(true);
+    deleteBtn.parentNode.replaceChild(newDeleteBtn, deleteBtn);
+
+    newDeleteBtn.addEventListener('click', async () => {
+        if (!confirm('Удалить изображение товара? Будет показана картинка по умолчанию.')) return;
+        try {
+            const res  = await fetch(`/admin/products/${productId}/delete-image`, { method: 'POST' });
+            const data = await res.json();
+            if (data.status !== 'success') throw new Error();
+            previewImg.src = DEFAULT;
+            newDeleteBtn.style.display = 'none';
+            const thumb = document.querySelector(`tr[data-id="${productId}"] .ap-thumb`);
+            if (thumb) thumb.src = DEFAULT;
+        } catch { alert('Ошибка удаления изображения'); }
+    });
 }
 
-// =================== СТРОКА ВАРИАЦИИ (РЕДАКТИРОВАНИЕ) ===================
+// =================== СТРОКА ВАРИАЦИИ ===================
+const toDeleteVariants = [];
 let variantRowId = 0;
+
 function addVariantRow(data = null) {
     const list = document.getElementById('variants-list');
-    const rid = ++variantRowId;
-    const div = document.createElement('div');
-    div.className = 'variant-row';
-    div.id = `vrow-${rid}`;
+    const rid  = ++variantRowId;
+    const div  = document.createElement('div');
+    div.className       = 'variant-row';
+    div.id              = `vrow-${rid}`;
     div.dataset.variantId = data ? data.id : '';
-    div.dataset.isNew = data ? 'false' : 'true';
+    div.dataset.isNew   = data ? 'false' : 'true';
+
+    const imgHtml = data && data.id
+        ? `<div class="v-img-cell">
+               ${data.image
+                   ? `<div class="v-img-wrap">
+                          <img src="${data.image}" class="v-img-thumb" alt="">
+                          <button type="button" class="v-img-del" onclick="deleteVariantImg(${data.id}, this)" title="Удалить"><i class="fas fa-times"></i></button>
+                      </div>`
+                   : `<label class="v-img-upload-label" title="Загрузить картинку">
+                          <i class="fas fa-image"></i>
+                          <input type="file" accept="image/*" style="display:none;"
+                                 onchange="uploadVariantImg(${data.id}, this)">
+                      </label>`
+               }
+           </div>`
+        : `<div class="v-img-cell"><span style="font-size:11px;color:#bbb;">после сохранения</span></div>`;
 
     div.innerHTML = `
-        <input type="text" class="ap-input v-color" placeholder="Цвет" value="${data ? (data.color || '') : ''}">
-        <input type="text" class="ap-input v-size"  placeholder="Размер" value="${data ? (data.size || '') : ''}">
+        <input type="text"   class="ap-input v-color" placeholder="Цвет"   value="${data ? (data.color || '') : ''}">
+        <input type="text"   class="ap-input v-size"  placeholder="Размер" value="${data ? (data.size  || '') : ''}">
         <input type="number" class="ap-input v-stock" placeholder="0" min="0" value="${data ? data.stock : 0}">
+        ${imgHtml}
         <button class="ap-del-variant-btn" onclick="deleteVariantRow('vrow-${rid}', ${data ? data.id : 0})">
             <i class="fas fa-trash"></i>
         </button>
@@ -371,45 +467,69 @@ function addVariantRow(data = null) {
     list.appendChild(div);
 }
 
-const toDeleteVariants = [];
 function deleteVariantRow(rowId, variantId) {
     if (variantId) toDeleteVariants.push(variantId);
     document.getElementById(rowId).remove();
 }
 
+async function uploadVariantImg(variantId, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const fd = new FormData();
+    fd.append('image', file);
+    try {
+        const res  = await fetch(`/admin/variants/${variantId}/upload-image`, { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message);
+        // Заменяем label на превью
+        const cell = input.closest('.v-img-cell');
+        cell.innerHTML = `<div class="v-img-wrap">
+            <img src="${data.url}" class="v-img-thumb" alt="">
+            <button type="button" class="v-img-del" onclick="deleteVariantImg(${variantId}, this)" title="Удалить"><i class="fas fa-times"></i></button>
+        </div>`;
+    } catch (err) { alert('Ошибка загрузки: ' + err.message); }
+}
+
+async function deleteVariantImg(variantId, btn) {
+    if (!confirm('Удалить изображение вариации?')) return;
+    try {
+        const res  = await fetch(`/admin/variants/${variantId}/delete-image`, { method: 'POST' });
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error();
+        const cell = btn.closest('.v-img-cell');
+        cell.innerHTML = `<label class="v-img-upload-label" title="Загрузить картинку">
+            <i class="fas fa-image"></i>
+            <input type="file" accept="image/*" style="display:none;"
+                   onchange="uploadVariantImg(${variantId}, this)">
+        </label>`;
+    } catch { alert('Ошибка удаления изображения'); }
+}
+
 // =================== СОХРАНИТЬ ТОВАР ===================
 async function saveProduct() {
-    const productId = document.getElementById('edit-product-id').value;
-    const statusEl = document.getElementById('modal-save-status');
+    const productId  = document.getElementById('edit-product-id').value;
+    const statusEl   = document.getElementById('modal-save-status');
     statusEl.textContent = '';
 
-    const variantRows = document.querySelectorAll('#variants-list .variant-row');
     const variants = [];
-
-    // Удалённые вариации
     toDeleteVariants.forEach(id => variants.push({ id, _delete: true }));
-
-    variantRows.forEach(row => {
-        const isNew = row.dataset.isNew === 'true';
+    document.querySelectorAll('#variants-list .variant-row').forEach(row => {
+        const isNew     = row.dataset.isNew === 'true';
         const variantId = parseInt(row.dataset.variantId) || null;
-        const color = row.querySelector('.v-color').value.trim();
-        const size = row.querySelector('.v-size').value.trim();
-        const stock = parseInt(row.querySelector('.v-stock').value) || 0;
-
-        if (isNew) {
-            variants.push({ _new: true, color, size, stock });
-        } else if (variantId) {
-            variants.push({ id: variantId, color, size, stock });
-        }
+        const color     = row.querySelector('.v-color').value.trim();
+        const size      = row.querySelector('.v-size').value.trim();
+        const stock     = parseInt(row.querySelector('.v-stock').value) || 0;
+        if (isNew)          variants.push({ _new: true, color, size, stock });
+        else if (variantId) variants.push({ id: variantId, color, size, stock });
     });
 
     const payload = {
-        name: document.getElementById('edit-name').value.trim(),
-        article: document.getElementById('edit-article').value.trim(),
-        category: document.getElementById('edit-category').value,
-        price: document.getElementById('edit-price').value,
+        name:        document.getElementById('edit-name').value.trim(),
+        article:     document.getElementById('edit-article').value.trim(),
+        category:    document.getElementById('edit-category').value,
+        price:       document.getElementById('edit-price').value,
         description: document.getElementById('edit-description').value.trim(),
-        is_hidden: document.getElementById('edit-hidden').checked,
+        is_hidden:   document.getElementById('edit-hidden').checked,
         variants
     };
 
@@ -420,9 +540,8 @@ async function saveProduct() {
     }
 
     try {
-        const res = await fetch(`/admin/products/${productId}/update`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const res  = await fetch(`/admin/products/${productId}/update`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -431,19 +550,17 @@ async function saveProduct() {
         statusEl.textContent = '✓ Сохранено';
         statusEl.style.color = '#28a745';
 
-        // Обновить строку в таблице без перезагрузки
         const row = document.querySelector(`tr[data-id="${productId}"]`);
         if (row) {
-            row.querySelector('.ap-prod-name').textContent = payload.name;
-            row.dataset.name = payload.name.toLowerCase();
-            row.dataset.hidden = payload.is_hidden ? 'true' : 'false';
+            row.querySelector('.ap-prod-name').textContent   = payload.name;
+            row.dataset.name    = payload.name.toLowerCase();
+            row.dataset.hidden  = payload.is_hidden ? 'true' : 'false';
             row.classList.toggle('ap-hidden-product', payload.is_hidden);
-            row.querySelector('.ap-price-cell').textContent = parseInt(payload.price) + ' ₽';
+            row.querySelector('.ap-price-cell').textContent  = parseInt(payload.price) + ' ₽';
             const visBtn = row.querySelector('.ap-vis-btn');
             visBtn.className = 'ap-vis-btn ' + (payload.is_hidden ? 'ap-vis-hidden' : 'ap-vis-shown');
             visBtn.querySelector('i').className = 'fas ' + (payload.is_hidden ? 'fa-eye-slash' : 'fa-eye');
         }
-
         setTimeout(closeModal, 800);
     } catch (err) {
         statusEl.textContent = 'Ошибка: ' + err.message;
@@ -453,28 +570,22 @@ async function saveProduct() {
 
 // =================== НОВЫЙ ТОВАР ===================
 document.getElementById('btn-new-product').addEventListener('click', () => {
-    document.getElementById('new-name').value = '';
-    document.getElementById('new-article').value = '';
-    document.getElementById('new-price').value = '';
-    document.getElementById('new-description').value = '';
+    ['new-name','new-article','new-price','new-description'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('new-variants-list').innerHTML = '';
     document.getElementById('new-save-status').textContent = '';
     document.getElementById('new-modal').style.display = 'flex';
 });
 
-function closeNewModal() {
-    document.getElementById('new-modal').style.display = 'none';
-}
+function closeNewModal() { document.getElementById('new-modal').style.display = 'none'; }
 
 let newVariantId = 0;
 function addNewVariantRow() {
     const list = document.getElementById('new-variants-list');
-    const rid = ++newVariantId;
-    const div = document.createElement('div');
+    const div  = document.createElement('div');
     div.className = 'variant-row';
     div.innerHTML = `
-        <input type="text" class="ap-input v-color" placeholder="Цвет" value="">
-        <input type="text" class="ap-input v-size"  placeholder="Размер" value="">
+        <input type="text"   class="ap-input v-color" placeholder="Цвет">
+        <input type="text"   class="ap-input v-size"  placeholder="Размер">
         <input type="number" class="ap-input v-stock" placeholder="0" min="0" value="0">
         <button class="ap-del-variant-btn" onclick="this.parentElement.remove()">
             <i class="fas fa-trash"></i>
@@ -486,41 +597,35 @@ function addNewVariantRow() {
 async function createProduct() {
     const statusEl = document.getElementById('new-save-status');
     statusEl.textContent = '';
-
     const variants = [];
     document.querySelectorAll('#new-variants-list .variant-row').forEach(row => {
         variants.push({
             _new: true,
             color: row.querySelector('.v-color').value.trim(),
-            size: row.querySelector('.v-size').value.trim(),
+            size:  row.querySelector('.v-size').value.trim(),
             stock: parseInt(row.querySelector('.v-stock').value) || 0
         });
     });
-
     const payload = {
-        name: document.getElementById('new-name').value.trim(),
-        article: document.getElementById('new-article').value.trim(),
-        category: document.getElementById('new-category').value,
-        price: document.getElementById('new-price').value,
+        name:        document.getElementById('new-name').value.trim(),
+        article:     document.getElementById('new-article').value.trim(),
+        category:    document.getElementById('new-category').value,
+        price:       document.getElementById('new-price').value,
         description: document.getElementById('new-description').value.trim(),
         variants
     };
-
     if (!payload.name || !payload.article || !payload.price) {
         statusEl.textContent = 'Заполните обязательные поля';
         statusEl.style.color = '#c0003a';
         return;
     }
-
     try {
-        const res = await fetch('/admin/products/new', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+        const res  = await fetch('/admin/products/new', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (data.status !== 'success') throw new Error(data.message);
-
         statusEl.textContent = '✓ Товар создан';
         statusEl.style.color = '#28a745';
         setTimeout(() => { closeNewModal(); location.reload(); }, 800);
@@ -530,10 +635,9 @@ async function createProduct() {
     }
 }
 
-// Закрытие модалок по клику вне
 window.addEventListener('click', e => {
     if (e.target.id === 'edit-modal') closeModal();
-    if (e.target.id === 'new-modal') closeNewModal();
+    if (e.target.id === 'new-modal')  closeNewModal();
 });
 </script>
 

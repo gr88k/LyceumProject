@@ -6,6 +6,91 @@
     <title>Urban Peak</title>
     <link rel="stylesheet" href="/css/product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .color-dot {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+        .product-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 350px;
+            flex-shrink: 0;
+        }
+        .gallery-main {
+            width: 350px;
+            height: 350px;
+            border-radius: 20px;
+            border: 3px solid #000;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gallery-main img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border: none !important;
+            border-radius: 0 !important;
+            transition: transform 0.4s ease;
+        }
+        .gallery-main img:hover { transform: scale(1.07); }
+        .gallery-placeholder {
+            width: 350px;
+            height: 350px;
+            border-radius: 20px;
+            border: 3px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ddd;
+            font-size: 72px;
+            background: #fafafa;
+        }
+        .gallery-thumbs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .gallery-thumb {
+            width: 70px;
+            cursor: pointer;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            overflow: hidden;
+            transition: border-color 0.2s;
+            background: #f5f5f5;
+        }
+        .gallery-thumb:hover  { border-color: #555; }
+        .gallery-thumb.active { border-color: #000; }
+        .gallery-thumb img {
+            width: 100%;
+            height: 60px;
+            object-fit: cover;
+            display: block;
+            border: none !important;
+            border-radius: 0 !important;
+        }
+        .gallery-thumb img:hover { transform: none; }
+        .thumb-label {
+            display: block;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 10px;
+            color: #777;
+            text-align: center;
+            padding: 3px 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
 <body>
     <div class = "container">
@@ -15,7 +100,7 @@
             <div class = "info">
                 <a href = "http://127.0.0.1:5000/about">О нас</a>
                 <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
-                <a href = "about.html">Доставка</a>
+                
             </div>
 
                 <form method="GET" action="/catalog" class="search-form">
@@ -57,7 +142,38 @@
             <button onclick="window.location.href='/catalog'" class="btn-back">←</button>
 
             {% if product %}
-                <img src="{{ product.image }}" alt="{{ product.name }}" width="350">
+                <!-- Галерея изображений -->
+                <div class="product-gallery">
+                    {% set all_images = [] %}
+
+                    {# Главное изображение товара #}
+                    {% set _ = all_images.append({'url': product.image, 'label': 'Основное'}) %}
+
+                    {# Картинки вариаций (уникальные, не дублирующие главное) #}
+                    {% for color, sizes in variants_data.items() %}
+                        {% for sz in sizes %}
+                            {% if sz.image and sz.image != product.image and sz.image not in all_images|map(attribute='url')|list %}
+                                {% set _ = all_images.append({'url': sz.image, 'label': color}) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    <div class="gallery-main">
+                        <img id="gallery-main-img" src="{{ all_images[0].url }}" alt="{{ product.name }}">
+                    </div>
+
+                    {% if all_images|length > 1 %}
+                    <div class="gallery-thumbs">
+                        {% for img in all_images %}
+                            <div class="gallery-thumb {% if loop.first %}active{% endif %}"
+                                 onclick="switchImage('{{ img.url }}', this)">
+                                <img src="{{ img.url }}" alt="{{ img.label }}">
+                                <span class="thumb-label">{{ img.label }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
                 <div class = "product-info">
                     <p class = "name">{{product.name}}</p>
 
@@ -74,7 +190,7 @@
                             {% for color, sizes in variants_data.items() %}
                                 <div class="color-group-box">
                                     <div class="color-title-row">
-                                        <img src="{{ color_icon }}" alt="icon" class="color-mini-icon">
+                                        <span class="color-dot" data-color="{{ color }}"></span>
                                         <span class="color-name-text">{{ color }}</span>
                                     </div>
                                     
@@ -320,3 +436,12 @@
         }
     </script>
     {% endif %}
+    <script>
+        function switchImage(url, thumbEl) {
+            document.getElementById('gallery-main-img').src = url;
+            document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+            thumbEl.classList.add('active');
+        }
+    </script>
+
+    <script src="/js/color_map.js"></script>

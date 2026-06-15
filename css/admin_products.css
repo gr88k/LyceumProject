@@ -389,3 +389,133 @@
     .variants-header, .variant-row { grid-template-columns: 1fr 1fr 80px 32px; }
     .ap-search { width: 100%; }
 }
+
+/* =================== ЗАГРУЗКА ИЗОБРАЖЕНИЙ =================== */
+.img-upload-zone {
+    width: 100%;
+    border: 2px solid #eee;
+    border-radius: 8px;
+    background: #fafafa;
+    overflow: hidden;
+}
+
+.img-preview-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    min-height: 160px;
+}
+.img-preview-thumb {
+    max-height: 150px;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    border: 1px solid #eee;
+    display: block;
+}
+
+/* Оверлей с кнопками — виден при наведении на зону */
+.img-overlay-btns {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.img-preview-wrap:hover .img-overlay-btns { opacity: 1; }
+
+.img-overlay-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-family: 'PT Sans', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: all 0.2s;
+}
+.img-change-btn {
+    background: #7c3aed;
+    color: #fff;
+}
+.img-change-btn:hover { background: #6d28d9; }
+
+.img-delete-btn {
+    background: #ff4d4d;
+    color: #fff;
+}
+.img-delete-btn:hover { background: #cc0000; }
+
+/* Вариации — колонка изображения */
+.variants-header { grid-template-columns: 1fr 1fr 90px 80px 36px; }
+.variant-row     { grid-template-columns: 1fr 1fr 90px 80px 36px; }
+
+.v-img-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.v-img-wrap {
+    position: relative;
+    display: inline-flex;
+}
+.v-img-thumb {
+    width: 52px; height: 52px;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    display: block;
+}
+.v-img-del {
+    position: absolute;
+    top: -5px; right: -5px;
+    width: 18px; height: 18px;
+    background: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 9px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+}
+.v-img-del:hover { background: #cc0000; }
+
+.v-img-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px; height: 52px;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #bbb;
+    font-size: 18px;
+    transition: all 0.2s;
+}
+.v-img-upload-label:hover { border-color: #7c3aed; color: #7c3aed; }
+
+/* Кнопка удаления товара */
+.ap-del-product-btn {
+    width: 36px; height: 36px;
+    background: #fde8e8;
+    color: #dc3545;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+.ap-del-product-btn:hover { background: #f5c2c2; }

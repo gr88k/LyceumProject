@@ -132,3 +132,50 @@
     color: #111;
     transform: scale(1.03);
 }
+
+/* =====================================================
+   АДАПТИВНЫЙ ДИЗАЙН — ГЛАВНАЯ СТРАНИЦА
+   ===================================================== */
+
+@media (max-width: 1024px) {
+    .about-main {
+        max-width: 100%;
+        padding: 0 24px 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .about-main {
+        margin: 24px auto;
+        padding: 0 16px 48px;
+    }
+
+    .about-section { margin-bottom: 32px; }
+
+    .about-section h2 { font-size: 22px; }
+    .about-section h3 { font-size: 20px; }
+    .about-section p  { font-size: 15px; }
+
+    .about-section ul,
+    .about-section ol { font-size: 15px; padding-left: 18px; }
+
+    .about-quote {
+        font-size: 15px;
+        padding: 12px 16px;
+    }
+
+    .cta-section {
+        padding: 28px 20px;
+        border-radius: 8px;
+    }
+    .cta-section h3 { font-size: 20px; }
+    .cta-section p  { font-size: 14px; margin-bottom: 20px; }
+
+    .cta-buttons { flex-direction: column; align-items: center; }
+    .btn { width: 100%; text-align: center; padding: 13px 24px; }
+}
+
+@media (max-width: 480px) {
+    .about-section h2 { font-size: 20px; }
+    .cta-section h3   { font-size: 18px; }
+}

@@ -3,6 +3,16 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
+class PasswordReset(db.Model):
+    """Временный код для сброса пароля."""
+    __tablename__ = 'password_resets'
+
+    id         = db.Column(db.Integer, primary_key=True)
+    email      = db.Column(db.String(120), nullable=False)
+    code       = db.Column(db.String(6), nullable=False)
+    created_at = db.Column(db.DateTime, default=__import__('datetime').datetime.utcnow)
+
+
 class PendingUser(db.Model):
     """Временная запись до подтверждения email."""
     __tablename__ = 'pending_users'

@@ -212,3 +212,85 @@
     font-size: 16px;
     color: rgb(64, 64, 64);
 }
+/* =====================================================
+   АДАПТИВНЫЙ ДИЗАЙН — ПРОФИЛЬ
+   ===================================================== */
+
+/* --- Планшет (до 1024px) --- */
+@media (max-width: 1024px) {
+    .top {
+        padding: 12px 24px;
+        height: auto;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .logo { padding-left: 0; }
+    .info { padding-left: 0; gap: 20px; }
+    .top a { font-size: 22px; width: auto; }
+    .top .register { padding-right: 0; font-size: 22px; }
+    .search-form { max-width: 260px; }
+    .profileContainer { margin-left: 24px; }
+}
+
+/* --- Мобильный (до 768px) --- */
+@media (max-width: 768px) {
+    /* Шапка */
+    .top {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 16px;
+        height: auto;
+        gap: 10px;
+    }
+    .logo { max-height: 56px; max-width: 90px; padding-left: 0; }
+    .info { padding-left: 0; gap: 14px; flex-wrap: wrap; }
+    .top a { font-size: 17px; width: auto; }
+    .top .register { padding-right: 0; font-size: 18px; }
+    .search-form { max-width: 100%; width: 100%; }
+
+    /* Профиль */
+    .profileContainer {
+        margin-left: 0;
+        padding: 16px;
+        height: auto;
+    }
+    .profileContainer p { font-size: 17px; }
+
+    /* Форма — на всю ширину */
+    .inputForms form {
+        margin-right: 0;
+        margin-top: 24px;
+        gap: 24px;
+        width: 100%;
+    }
+    .inputForms input {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        font-size: 15px;
+        padding: 10px 16px;
+    }
+    .form-group {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .form-group label {
+        font-family: 'PT Sans', sans-serif;
+        font-size: 14px;
+        color: #555;
+        padding-left: 4px;
+    }
+    .inputForms button {
+        width: 100%;
+        font-size: 16px;
+        padding: 14px 0;
+    }
+}
+
+/* --- Маленький мобильный (до 480px) --- */
+@media (max-width: 480px) {
+    .profileContainer { padding: 12px; }
+    .profileContainer p { font-size: 15px; }
+}

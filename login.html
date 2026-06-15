@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Urban Peak</title>
-    <link rel="stylesheet" href="css/register.css">
+    <link rel="stylesheet" href="/css/register.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -13,9 +13,8 @@
             <img class = "logo" src = "css/data/testlogo2.png" alt = "Логотип" width = "250" height = "200">
 
             <div class = "info">
-                <a href = "http://127.0.0.1:5000/about">О нас</a>
-                <a href = "http://127.0.0.1:5000/catalog">Каталог</a>
-                <a href = "about.html">Доставка</a>
+                <a href = "/about">О нас</a>
+                <a href = "/catalog">Каталог</a>
             </div>
 
             <form method="GET" action="/catalog" class="search-form">
@@ -27,7 +26,7 @@
                 <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
             </form>
         
-            <a href = "about.html" class = "register">Регистрация</a> 
+            <a href = "/register" class = "register">Регистрация</a> 
 
         </div>
 
@@ -36,10 +35,15 @@
 
                 <div class = "inputForms">
                     <form method="POST" action="/login">
+                        {% if error %}
+                            <p style="color:#dc3545;font-family:'PT Sans',sans-serif;font-size:14px;text-align:center;margin-bottom:-20px;">{{ error }}</p>
+                        {% endif %}
                         <input type="email" placeholder="Адрес электронной почты" name = "email">
                         <input type="password" placeholder="Пароль" name = "password">
 
                         <button type = "submit" class = "sbm-btn">Войти</button>
+                        <p><a href="/forgot-password">Забыли пароль?</a></p>
+                        <p>Нет аккаунта? <a href="/register">Регистрация</a></p>
                     </form>
                 </div>
             </div>

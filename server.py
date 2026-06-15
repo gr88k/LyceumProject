@@ -6,9 +6,10 @@ import os
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from models import db, User, Product, ProductVariant, CartItem, Order, OrderItem, PendingUser
+from models import db, User, Product, ProductVariant, CartItem, Order, OrderItem, PendingUser, PasswordReset
 from werkzeug.security import generate_password_hash, check_password_hash
 #from flask_admin import Admin
 #from flask_admin.contrib.sqla import ModelView
@@ -29,6 +30,38 @@ ITEMS_PER_PAGE = 12
 app.config['SECRET_KEY'] = 'секретный-ключ-для-сессий'  # Обязательно!
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'  # файл БД
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# ===== ЗАГРУЗКА ИЗОБРАЖЕНИЙ =====
+UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'static', 'images', 'products')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'gif'}
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Копируем дефолтное изображение в папку загрузок если его там нет
+_default_src = os.path.join(os.path.dirname(__file__), 'css', 'data', 'cap.png')
+_default_dst = os.path.join(UPLOAD_FOLDER, 'cap.png')
+if os.path.isfile(_default_src) and not os.path.isfile(_default_dst):
+    import shutil
+    shutil.copy2(_default_src, _default_dst)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+DEFAULT_IMAGE = '/static/images/products/cap.png'
+
+def delete_image_file(image_url):
+    """Удаляет файл изображения с диска. Никогда не удаляет дефолтное изображение."""
+    if not image_url:
+        return
+    # Защита дефолтного изображения
+    if image_url.rstrip('/').endswith('cap.png') and 'products' in image_url:
+        return
+    rel = image_url.lstrip('/')
+    full_path = os.path.join(os.path.dirname(__file__), rel)
+    if os.path.isfile(full_path):
+        try:
+            os.remove(full_path)
+        except OSError:
+            pass
 
 # ===== КОНФИГУРАЦИЯ ПОЧТЫ (Яндекс 360) =====
 MAIL_HOST     = 'smtp.yandex.ru'
@@ -355,17 +388,10 @@ def catalog():
     # Получаем уникальные товары (избегаем дубликатов из-за JOIN)
     products_list = query.distinct().all()
 
-    # Постобработка картинок-заглушек (как в детальной странице)
-    import os
+    # Изображения: берём из БД, иначе дефолтное
+    DEFAULT_IMAGE = '/static/images/products/cap.png'
     for product in products_list:
-        real_image_path = f"css/data/{product.article}.jpg"
-        real_image_path_png = f"css/data/{product.article}.png"
-        if os.path.exists(real_image_path):
-            product.image = f"css/data/{product.article}.jpg"
-        elif os.path.exists(real_image_path_png):
-            product.image = f"css/data/{product.article}.png"
-        else:
-            product.image = "css/data/hat.png" if product.category == 'hat' else "css/data/cap.png"
+        product.image = product.main_image if product.main_image else DEFAULT_IMAGE
 
     # 4. Ручная пагинация отфильтрованного списка
     total_items = len(products_list)
@@ -442,35 +468,30 @@ def catalog():
 @app.route('/product/<article>')
 def product_detail(article):
     product = Product.query.filter_by(article=article).first_or_404()
-    
-    import os
-    real_image_path = f"css/data/{product.article}.jpg"
-    real_image_path_png = f"css/data/{product.article}.png"
-    
-    if os.path.exists(real_image_path):
-        product.image = f"css/data/{product.article}.jpg"
-    elif os.path.exists(real_image_path_png):
-        product.image = f"css/data/{product.article}.png"
-    else:
-        product.image = "/css/data/hat.png" if product.category == 'hat' else "/css/data/cap.png"
-            
+
+    DEFAULT_IMAGE = '/static/images/products/cap.png'
+
+    # Главное изображение: берём из БД, иначе дефолтное
+    product.image = product.main_image if product.main_image else DEFAULT_IMAGE
+
     variants_data = {}
     for variant in product.variants:
-        if variant.stock > 0:  
-            color = variant.color or "Обычный"
+        if variant.stock > 0:
+            color = variant.color or 'Обычный'
             if color not in variants_data:
                 variants_data[color] = []
             variants_data[color].append({
-                "id": variant.id,  # <-- ДОБАВЛЕНО ТУТ
-                "size": variant.size or "Универсальный",
-                "stock": variant.stock
+                'id':    variant.id,
+                'size':  variant.size or 'Универсальный',
+                'stock': variant.stock,
+                'image': variant.image if variant.image else DEFAULT_IMAGE
             })
-            
-    color_icon = "/css/data/hat.png" if product.category == 'hat' else "/css/data/cap.png"
-        
+
+    color_icon = '/css/data/hat.png' if product.category == 'hat' else '/static/images/products/cap.png'
+
     return render_template(
-        'product.html', 
-        product=product, 
+        'product.html',
+        product=product,
         variants_data=variants_data,
         color_icon=color_icon
     )
@@ -639,9 +660,8 @@ def login():
             login_user(user)
             return redirect(url_for('catalog'))
         
-        else:
-            return "Неверный email или пароль", 400
-    return render_template("login.html")
+        return render_template('login.html', error='Неверный email или пароль')
+    return render_template('login.html', error=None)
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required  # только для авторизованных
@@ -706,6 +726,11 @@ def product_custom_static():
 @app.route('/css/register.css')
 def register_custom_static():
     return send_from_directory('css', 'register.css')
+
+@app.route('/js/color_map.js')
+def color_map_js():
+    return send_from_directory('.', 'color_map.js', mimetype='application/javascript')
+
 
 @app.route('/css/checkout.css')
 def checkout_custom_static():
@@ -800,10 +825,10 @@ def admin_import_xlsx():
         name_lower = name.lower()
         if 'шапка' in name_lower or 'снуд' in name_lower:
             category = 'hat'
-            image_path = "/css/data/hat.png"
+            image_path = DEFAULT_IMAGE
         else:
             category = 'cap'
-            image_path = "/css/data/cap.png"
+            image_path = DEFAULT_IMAGE
         
         if remaining_parts:
             last_part = remaining_parts[-1]
@@ -913,16 +938,9 @@ def get_cart():
         product = variant.product
         item_total = product.price * item.quantity
         total_price += item_total
-        
-        # Определение картинки аналогично каталогу
-        real_image_path = f"css/data/{product.article}.jpg"
-        real_image_path_png = f"css/data/{product.article}.png"
-        if os.path.exists(real_image_path):
-            img_url = f"/css/data/{product.article}.jpg"
-        elif os.path.exists(real_image_path_png):
-            img_url = f"/css/data/{product.article}.png"
-        else:
-            img_url = "/css/data/hat.png" if product.category == 'hat' else "/css/data/cap.png"
+
+        # Берём картинку из БД: вариации → товар → дефолт
+        img_url = variant.image or product.main_image or DEFAULT_IMAGE
 
         items_data.append({
             "id": item.id,
@@ -1147,6 +1165,7 @@ def admin_product_detail(product_id):
         'price': product.price,
         'description': product.description or '',
         'is_hidden': product.is_hidden or False,
+        'main_image': product.main_image or '',
         'variants': variants
     })
 
@@ -1179,6 +1198,7 @@ def admin_update_product(product_id):
             if vdata.get('_delete') and vdata.get('id'):
                 v = ProductVariant.query.get(vdata['id'])
                 if v and v.product_id == product_id:
+                    delete_image_file(v.image)
                     db.session.delete(v)
             elif vdata.get('id'):
                 v = ProductVariant.query.get(vdata['id'])
@@ -1260,6 +1280,256 @@ def admin_toggle_hidden(product_id):
 @app.route('/css/admin_products.css')
 def admin_products_css():
     return send_from_directory('css', 'admin_products.css')
+
+
+@app.route('/static/images/products/<path:filename>')
+def product_image(filename):
+    return send_from_directory(UPLOAD_FOLDER, filename)
+
+
+# ---- Загрузить главное изображение товара ----
+@app.route('/admin/products/<int:product_id>/upload-image', methods=['POST'])
+@login_required
+def upload_product_image(product_id):
+    if current_user.role != 'Admin':
+        return jsonify({'status': 'error'}), 403
+    product = Product.query.get_or_404(product_id)
+
+    f = request.files.get('image')
+    if not f or not allowed_file(f.filename):
+        return jsonify({'status': 'error', 'message': 'Недопустимый файл'}), 400
+
+    # Удаляем старое изображение
+    delete_image_file(product.main_image)
+
+    ext = f.filename.rsplit('.', 1)[1].lower()
+    filename = secure_filename(f'product_{product_id}_main.{ext}')
+    f.save(os.path.join(UPLOAD_FOLDER, filename))
+    product.main_image = f'/static/images/products/{filename}'
+    db.session.commit()
+    return jsonify({'status': 'success', 'url': product.main_image})
+
+
+# ---- Удалить главное изображение товара ----
+@app.route('/admin/products/<int:product_id>/delete-image', methods=['POST'])
+@login_required
+def delete_product_image(product_id):
+    if current_user.role != 'Admin':
+        return jsonify({'status': 'error'}), 403
+    product = Product.query.get_or_404(product_id)
+    delete_image_file(product.main_image)
+    product.main_image = None
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+# ---- Загрузить изображение вариации ----
+@app.route('/admin/variants/<int:variant_id>/upload-image', methods=['POST'])
+@login_required
+def upload_variant_image(variant_id):
+    if current_user.role != 'Admin':
+        return jsonify({'status': 'error'}), 403
+    variant = ProductVariant.query.get_or_404(variant_id)
+
+    f = request.files.get('image')
+    if not f or not allowed_file(f.filename):
+        return jsonify({'status': 'error', 'message': 'Недопустимый файл'}), 400
+
+    delete_image_file(variant.image)
+
+    ext = f.filename.rsplit('.', 1)[1].lower()
+    filename = secure_filename(f'variant_{variant_id}.{ext}')
+    f.save(os.path.join(UPLOAD_FOLDER, filename))
+    variant.image = f'/static/images/products/{filename}'
+    db.session.commit()
+    return jsonify({'status': 'success', 'url': variant.image})
+
+
+# ---- Удалить изображение вариации ----
+@app.route('/admin/variants/<int:variant_id>/delete-image', methods=['POST'])
+@login_required
+def delete_variant_image(variant_id):
+    if current_user.role != 'Admin':
+        return jsonify({'status': 'error'}), 403
+    variant = ProductVariant.query.get_or_404(variant_id)
+    delete_image_file(variant.image)
+    variant.image = None
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+# ---- Полное удаление товара ----
+@app.route('/admin/products/<int:product_id>/delete', methods=['POST'])
+@login_required
+def admin_delete_product(product_id):
+    if current_user.role != 'Admin':
+        return jsonify({'status': 'error'}), 403
+    product = Product.query.get_or_404(product_id)
+
+    # Удаляем все файлы изображений
+    delete_image_file(product.main_image)
+    for v in product.variants:
+        delete_image_file(v.image)
+
+    # Каскадно удаляем вариации и сам товар
+    for v in product.variants:
+        db.session.delete(v)
+    db.session.delete(product)
+    db.session.commit()
+    return jsonify({'status': 'success'})
+
+
+def send_reset_email(email, username, code):
+    """Отправляет письмо с кодом сброса пароля."""
+    _tpl_path = os.path.join(os.path.dirname(__file__), 'email_reset.html')
+    with open(_tpl_path, encoding='utf-8') as f:
+        html = f.read()
+    html = html.replace('{{username}}', username).replace('{{code}}', code)
+
+    text = (
+        f"Здравствуйте, {username}!\n\n"
+        f"Вы запросили сброс пароля на UrbanPeak.\n\n"
+        f"Ваш код подтверждения:\n\n"
+        f"  {code}\n\n"
+        f"Код действителен 15 минут.\n\n"
+        f"Если вы не запрашивали сброс пароля — проигнорируйте письмо.\n\n"
+        f"UrbanPeak · orders@urbanpeakshop.ru"
+    )
+
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = 'UrbanPeak: сброс пароля'
+    msg['From']    = f'UrbanPeak <{MAIL_FROM}>'
+    msg['To']      = email
+    msg.attach(MIMEText(text, 'plain', 'utf-8'))
+    msg.attach(MIMEText(html,  'html',  'utf-8'))
+
+    with smtplib.SMTP_SSL(MAIL_HOST, MAIL_PORT) as smtp:
+        smtp.login(MAIL_USER, MAIL_PASSWORD)
+        smtp.sendmail(MAIL_FROM, [email], msg.as_bytes())
+
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        import random
+        email = request.form.get('email', '').strip()
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return render_template('forgot_password.html',
+                                   error='Пользователь с таким email не найден')
+
+        # Удаляем старый код если был
+        PasswordReset.query.filter_by(email=email).delete()
+
+        code = str(random.randint(100000, 999999))
+        reset = PasswordReset(email=email, code=code)
+        db.session.add(reset)
+        db.session.commit()
+
+        try:
+            send_reset_email(email, user.username, code)
+        except Exception as e:
+            app.logger.error(f'Ошибка отправки кода сброса на {email}: {e}')
+            return render_template('forgot_password.html',
+                                   error='Не удалось отправить письмо. Проверьте email.')
+
+        return redirect(url_for('verify_reset', email=email))
+
+    return render_template('forgot_password.html', error=None)
+
+
+@app.route('/verify-reset', methods=['GET', 'POST'])
+def verify_reset():
+    import datetime
+    email = request.args.get('email') or request.form.get('email', '')
+
+    if not email:
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        code_entered = request.form.get('code', '').strip()
+        reset = PasswordReset.query.filter_by(email=email).first()
+
+        if not reset:
+            return render_template('verify_reset.html', email=email,
+                                   error='Запрос не найден. Попробуйте снова.')
+
+        age = datetime.datetime.utcnow() - reset.created_at
+        if age.total_seconds() > 900:
+            db.session.delete(reset)
+            db.session.commit()
+            return render_template('verify_reset.html', email=email,
+                                   error='Код истёк. Запросите новый.')
+
+        if reset.code != code_entered:
+            return render_template('verify_reset.html', email=email,
+                                   error='Неверный код. Попробуйте ещё раз.')
+
+        # Код верный — помечаем что можно менять пароль (храним в сессии)
+        from flask import session
+        session['reset_verified_email'] = email
+        return redirect(url_for('new_password'))
+
+    return render_template('verify_reset.html', email=email, error=None)
+
+
+@app.route('/resend-reset-code')
+def resend_reset_code():
+    import random
+    email = request.args.get('email', '')
+    reset = PasswordReset.query.filter_by(email=email).first()
+
+    if not reset:
+        return redirect(url_for('forgot_password'))
+
+    reset.code = str(random.randint(100000, 999999))
+    reset.created_at = __import__('datetime').datetime.utcnow()
+    db.session.commit()
+
+    user = User.query.filter_by(email=email).first()
+    if user:
+        try:
+            send_reset_email(email, user.username, reset.code)
+        except Exception as e:
+            app.logger.error(f'Ошибка повторной отправки кода сброса на {email}: {e}')
+
+    return redirect(url_for('verify_reset', email=email))
+
+
+@app.route('/new-password', methods=['GET', 'POST'])
+def new_password():
+    from flask import session
+    email = session.get('reset_verified_email')
+
+    if not email:
+        return redirect(url_for('forgot_password'))
+
+    if request.method == 'POST':
+        password1 = request.form.get('password1', '')
+        password2 = request.form.get('password2', '')
+
+        if len(password1) < 6:
+            return render_template('new_password.html',
+                                   error='Пароль должен быть не менее 6 символов')
+        if password1 != password2:
+            return render_template('new_password.html',
+                                   error='Пароли не совпадают')
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return redirect(url_for('forgot_password'))
+
+        user.password = generate_password_hash(password1)
+        PasswordReset.query.filter_by(email=email).delete()
+        session.pop('reset_verified_email', None)
+        db.session.commit()
+
+        login_user(user)
+        flash('Пароль успешно изменён!', 'success')
+        return redirect(url_for('catalog'))
+
+    return render_template('new_password.html', error=None)
 
 
 if __name__ == '__main__':
