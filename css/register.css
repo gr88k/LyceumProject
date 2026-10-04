@@ -307,3 +307,51 @@
     }
     .inputForms input { font-size: 14px; padding: 9px 14px; }
 }
+
+/* =====================================================
+   МОБИЛЬНЫЙ АДАПТИВ — новая шапка (top-right-group, nav-icon)
+   ===================================================== */
+
+.top-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 50px;
+}
+.nav-icon    { display: none; }
+.nav-text    { display: inline; }
+.profile-icon { display: none; }
+.profile-text { display: inline; }
+
+@media (max-width: 768px) {
+    .logo {
+        padding-left: 0 !important;
+        max-height: 52px !important;
+        max-width: 110px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+    .top {
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        padding: 10px 14px !important;
+        height: auto !important;
+        gap: 8px !important;
+    }
+    .top > img.logo         { grid-column: 1; grid-row: 1; }
+    .top > .info            { grid-column: 2; grid-row: 1; padding-left: 10px !important; gap: 18px !important; }
+    .top > .search-form     { grid-column: 1 / -1; grid-row: 2; max-width: 100% !important; width: 100% !important; }
+    .top > .top-right-group { grid-column: 3; grid-row: 1; padding-right: 0 !important; gap: 14px !important; }
+
+    .nav-text    { display: none; }
+    .nav-icon    { display: inline; font-size: 18px; }
+    .profile-text { display: none; }
+    .profile-icon { display: inline; font-size: 20px; }
+    .top .register { padding-right: 0 !important; font-size: 20px; }
+    .header-cart-link { font-size: 22px !important; }
+    .dropdown-menu { left: auto !important; right: 0 !important; min-width: 170px; }
+    .info a { font-size: 18px !important; width: auto !important; }
+}

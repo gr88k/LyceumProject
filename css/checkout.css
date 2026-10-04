@@ -18,7 +18,39 @@ body {
     background: #ffffff;
     border-bottom: 2px solid #000000;
     height: 100px;
+    gap: 20px;
 }
+
+/* Поиск в шапке — вписывается в flex-строку */
+.top .search-form {
+    flex: 0 1 340px;
+    display: flex;
+    gap: 0;
+    margin: 0;
+}
+.top .search-input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 2px solid #2d2929;
+    border-right: none;
+    border-radius: 30px 0 0 30px;
+    font-size: 15px;
+    outline: none;
+    font-family: 'PT Sans', sans-serif;
+}
+.top .search-input:focus { border-color: #000; }
+.top .search-btn {
+    padding: 8px 18px;
+    background: #fff;
+    color: #454e55;
+    border: 2px solid #1c1e20;
+    border-left: none;
+    border-radius: 0 30px 30px 0;
+    font-size: 15px;
+    cursor: pointer;
+    font-family: 'PT Serif', serif;
+}
+.top .search-btn:hover { background: #f5f5f5; color: #000; }
 
 .logo {
     max-height: 80px;
@@ -306,4 +338,152 @@ body {
     .form-row label { padding-top: 0; }
     .checkout-bottom { flex-direction: column; align-items: flex-start; }
     .confirm-btn { width: 100%; text-align: center; }
+}
+
+/* =====================================================
+   МОБИЛЬНЫЙ АДАПТИВ — checkout / order_success / my_orders
+   ===================================================== */
+
+.top-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 50px;
+}
+.nav-icon    { display: none; }
+.nav-text    { display: inline; }
+.profile-icon { display: none; }
+.profile-text { display: inline; }
+
+@media (max-width: 768px) {
+
+    /* --- Шапка --- */
+    .logo {
+        padding-left: 0 !important;
+        max-height: 52px !important;
+        max-width: 110px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+    .top {
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        padding: 10px 14px !important;
+        height: auto !important;
+        gap: 8px !important;
+    }
+    .top > img.logo         { grid-column: 1; grid-row: 1; }
+    .top > .info            { grid-column: 2; grid-row: 1; padding-left: 10px !important; gap: 18px !important; }
+    .top > .search-form     { grid-column: 1 / -1; grid-row: 2; max-width: 100% !important; width: 100% !important; }
+    .top > .top-right-group { grid-column: 3; grid-row: 1; padding-right: 0 !important; gap: 14px !important; }
+
+    .nav-text    { display: none; }
+    .nav-icon    { display: inline; font-size: 18px; }
+    .profile-text { display: none; }
+    .profile-icon { display: inline; font-size: 20px; }
+    .top .register { padding-right: 0 !important; font-size: 20px; }
+    .dropdown-menu { left: auto !important; right: 0 !important; min-width: 170px; }
+    .info a { font-size: 18px !important; width: auto !important; }
+
+    /* --- Страница оформления заказа --- */
+    .checkout-page {
+        padding: 0 12px 40px;
+        margin: 16px auto;
+    }
+    .page-title { font-size: 24px; margin-bottom: 16px; }
+
+    .checkout-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 6px;
+    }
+    .form-row label { padding-top: 0; font-size: 13px; }
+
+    /* --- Ваш заказ: карточки вместо таблицы --- */
+    .order-summary-card { padding: 16px; }
+    .order-table { display: none; } /* скрываем таблицу на мобильном */
+    .order-cards-mobile { display: flex; flex-direction: column; gap: 10px; }
+
+    /* --- Нижняя часть --- */
+    .checkout-bottom {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+    .confirm-btn { width: 100%; text-align: center; padding: 14px 20px; }
+
+    /* --- Страница "Заказ оформлен" --- */
+    .success-box {
+        margin: 20px auto !important;
+        padding: 30px 20px !important;
+    }
+    .success-title { font-size: 24px; }
+    .btn-row { flex-direction: column; }
+    .btn-catalog, .btn-orders { width: 100%; text-align: center; }
+
+    /* --- Мои заказы --- */
+    .orders-page {
+        margin: 16px auto;
+        padding: 0 12px 40px;
+    }
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    .order-footer {
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px 16px;
+    }
+    .order-body { padding: 12px 16px; }
+    .order-items-table { font-size: 12px; }
+    .order-items-table th,
+    .order-items-table td { padding: 6px 8px; }
+}
+
+/* ===== СТИЛИ ПОИСКА (из catalog.css) ===== */
+.search-form {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+.search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #2d2929;
+    border-right: none;
+    border-radius: 30px 0 0 30px;
+    font-size: 16px;
+    outline: none;
+    font-family: 'PT Sans', sans-serif;
+}
+.search-input:focus { border-color: #000; }
+.search-btn {
+    padding: 10px 20px;
+    background: #fff;
+    color: #454e55;
+    border: 2px solid #1c1e20;
+    border-left: none;
+    border-radius: 0 30px 30px 0;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'PT Serif', serif;
+}
+.search-btn:hover { background: #f5f5f5; color: #000; }
+
+@media (max-width: 768px) {
+    .search-form { max-width: 100%; }
+    .search-input { font-size: 14px; padding: 8px 12px; }
+    .search-btn { padding: 8px 14px; font-size: 14px; }
 }

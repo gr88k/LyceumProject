@@ -9,32 +9,36 @@
 </head>
 <body>
     <!-- Шапка -->
-    <div class="top">
-        <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
-        <div class="info">
-            <a href="/about">О нас</a>
-            <a href="/catalog">Каталог</a>
-        </div>
-        <div class="top-right">
-            {% if current_user.is_authenticated %}
+            <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
+            <div class="info">
+                <a href="/about"><span class="nav-text">О нас</span><span class="nav-icon"><i class="fas fa-info-circle"></i></span></a>
+                <a href="/catalog"><span class="nav-text">Каталог</span><span class="nav-icon"><i class="fas fa-th-large"></i></span></a>
+            </div>
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text" name="q" placeholder="Поиск товаров..." value="{{ request.args.get('q', '') }}" class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+            <div class="top-right-group">
                 <div class="dropdown">
-                    <span class="register">Профиль ▼</span>
+                    <span class="register">
+                        <span class="profile-text">Профиль ▼</span>
+                        <span class="profile-icon"><i class="fas fa-user"></i> ▾</span>
+                    </span>
                     <div class="dropdown-menu">
                         <a href="{{ url_for('profile') }}">Личный кабинет</a>
                         <a href="{{ url_for('my_orders') }}">Мои заказы</a>
                         {% if current_user.role == 'Admin' %}
                             <hr>
                             <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                            <a href="{{ url_for('admin_products') }}">Товары</a>
                         {% endif %}
                         <hr>
                         <a href="{{ url_for('logout') }}">Выйти</a>
                     </div>
                 </div>
-            {% else %}
-                <a href="/register" class="register">Регистрация</a>
-            {% endif %}
+            </div>
         </div>
-    </div>
 
     <div class="checkout-page">
         <h1 class="page-title">Оформление заказа</h1>
@@ -42,7 +46,9 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for cat, msg in messages %}
-                    <div class="flash flash-{{ cat }}">{{ msg }}</div>
+                    {% if cat == 'danger' %}
+                    <div class="flash flash-danger">{{ msg }}</div>
+                    {% endif %}
                 {% endfor %}
             {% endif %}
         {% endwith %}
@@ -180,9 +186,11 @@
                 </div>
             </div>
 
-            <!-- Состав заказа -->
+            <!-- Состав заказа — таблица (десктоп) -->
             <div class="order-summary-card">
                 <div class="card-title">Ваш заказ</div>
+
+                <!-- Таблица — только на десктопе -->
                 <table class="order-table">
                     <thead>
                         <tr>
@@ -212,6 +220,25 @@
                         </tr>
                     </tfoot>
                 </table>
+
+                <!-- Карточки — только на мобильных -->
+                <div class="order-cards-mobile" style="display:none;">
+                    {% for item in items %}
+                    <div style="background:#f9f9f9; border-radius:8px; padding:12px 14px; border:1px solid #eee;">
+                        <div style="font-weight:700; font-size:14px; color:#111; margin-bottom:4px;">{{ item.name }}</div>
+                        <div style="font-size:12px; color:#999; margin-bottom:6px;">Арт: {{ item.article }}</div>
+                        <div style="display:flex; justify-content:space-between; font-size:13px; color:#555;">
+                            <span>{{ item.color }} / {{ item.size }}</span>
+                            <span>{{ item.quantity }} шт.</span>
+                        </div>
+                        <div style="text-align:right; font-weight:700; font-size:15px; color:#28a745; margin-top:6px;">{{ item.item_total | int }} ₽</div>
+                    </div>
+                    {% endfor %}
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 4px; border-top:2px solid #ddd; margin-top:4px;">
+                        <span style="font-family:'PT Serif',serif; font-weight:700; font-size:16px;">Итого:</span>
+                        <span style="font-family:'PT Serif',serif; font-weight:700; font-size:20px; color:#28a745;">{{ total_price | int }} ₽</span>
+                    </div>
+                </div>
             </div>
 
             <!-- Согласие и кнопка -->
@@ -229,7 +256,16 @@
     </div>
 
     <script>
-        // Маска телефона
+        // Переключаем таблицу/карточки в зависимости от ширины экрана
+        function toggleOrderView() {
+            const isMobile = window.innerWidth <= 768;
+            const table = document.querySelector('.order-table');
+            const cards = document.querySelector('.order-cards-mobile');
+            if (table) table.style.display = isMobile ? 'none' : '';
+            if (cards) cards.style.display = isMobile ? 'flex' : 'none';
+        }
+        toggleOrderView();
+        window.addEventListener('resize', toggleOrderView);
         const phoneInput = document.getElementById('phone-input');
         phoneInput.addEventListener('input', function() {
             let val = this.value.replace(/\D/g, '');

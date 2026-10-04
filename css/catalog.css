@@ -801,3 +801,295 @@
     .top { padding: 12px; }
     .info a, .top a { font-size: 16px; }
 }
+
+/* =====================================================
+   ОБЩИЕ: шторка фильтров (работает на всех устройствах)
+   ===================================================== */
+
+/* Скрываем старую горизонтальную панель везде */
+.filter-top-bar { display: none !important; }
+
+/* Кнопка «Фильтры» — видна всегда */
+.mobile-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 16px;
+    padding: 12px 24px;
+    background: #111;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'PT Serif', serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.3px;
+    transition: background 0.2s;
+}
+.mobile-filter-btn:hover { background: #333; }
+
+/* Оверлей */
+.filter-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 4000;
+}
+.filter-drawer-overlay.open { display: block; }
+
+/* Сама шторка */
+.filter-drawer {
+    position: fixed;
+    top: 0; left: 0;
+    width: 320px;
+    max-width: 90vw;
+    height: 100%;
+    background: #fff;
+    z-index: 4001;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+}
+.filter-drawer.open { transform: translateX(0); }
+
+/* Заголовок шторки */
+.filter-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 2px solid #eee;
+    font-family: 'PT Serif', serif;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.filter-drawer-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: #555;
+    line-height: 1;
+    padding: 0;
+    transition: color 0.2s;
+}
+.filter-drawer-close:hover { color: #000; }
+
+/* Тело шторки — скролл */
+.filter-drawer-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px;
+}
+
+/* Внутри шторки — фильтры в столбик */
+.filter-drawer .filter-top-bar {
+    display: block !important;
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+.filter-drawer .horizontal-filter-form { display: block; }
+.filter-drawer .filter-selectors-row {
+    flex-direction: column;
+    gap: 20px;
+}
+.filter-drawer .filter-dropdown-bucket { width: 100%; }
+.filter-drawer .bucket-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #888;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #eee;
+}
+.filter-drawer .bucket-checkboxes {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.filter-drawer .bucket-checkboxes label {
+    font-size: 15px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+.filter-drawer .bucket-checkboxes input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: #111;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.filter-drawer .filter-toggle-bucket { margin-top: 4px; }
+.filter-drawer .toggle-switch-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+}
+.filter-drawer .filter-actions-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+.filter-drawer .filter-apply-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 8px;
+}
+.filter-drawer .filter-reset-link {
+    width: 100%;
+    text-align: center;
+    display: block;
+    padding: 8px;
+}
+
+/* top-right-group */
+.top-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 50px;
+}
+
+/* Иконки навигации — по умолчанию скрыты */
+.nav-icon { display: none; }
+.nav-text  { display: inline; }
+/* Иконка профиля — по умолчанию скрыта */
+.profile-icon { display: none; }
+.profile-text  { display: inline; }
+
+/* =====================================================
+   МОБИЛЬНЫЕ (до 768px)
+   ===================================================== */
+@media (max-width: 768px) {
+
+    /* --- Логотип: правильные пропорции --- */
+    .logo {
+        padding-left: 0 !important;
+        max-height: 52px !important;
+        max-width: 110px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    /* --- Шапка: 2 строки через grid --- */
+    .top {
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        padding: 10px 14px !important;
+        height: auto !important;
+        gap: 8px !important;
+        flex-wrap: unset !important;
+        flex-direction: unset !important;
+    }
+
+    /* Логотип — строка 1, колонка 1 */
+    .top > img.logo,
+    .top > .logo {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    /* Навигация — строка 1, колонка 2 */
+    .top > .info {
+        grid-column: 2;
+        grid-row: 1;
+        padding-left: 10px !important;
+        gap: 18px !important;
+    }
+
+    /* --- 1. Иконки вместо текста в навигации --- */
+    .nav-text  { display: none; }
+    .nav-icon  { display: inline; font-size: 18px; }
+    .info a    { font-size: 18px !important; width: auto !important; }
+
+    /* Группа корзина+профиль — строка 1, колонка 3 */
+    .top > .top-right-group {
+        grid-column: 3;
+        grid-row: 1;
+        padding-right: 0 !important;
+        gap: 14px !important;
+    }
+
+    /* Поиск — строка 2, вся ширина */
+    .top > .search-form {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* --- 3. Иконка человечка вместо слова Профиль --- */
+    .profile-text { display: none; }
+    .profile-icon { display: inline; font-size: 20px; }
+    .top .register { padding-right: 0 !important; font-size: 20px; }
+    .header-cart-link { font-size: 22px !important; }
+    .dropdown-menu { left: auto !important; right: 0 !important; min-width: 170px; }
+
+    /* --- 4. Каталог: 2 в строке --- */
+    .catalogContainer {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 10px !important;
+        padding: 10px !important;
+    }
+    .product-card { padding: 8px; border-radius: 8px; }
+    .product-card img {
+        width: 100% !important;
+        height: 150px !important;
+        object-fit: cover !important;
+        border-radius: 6px;
+    }
+    .product-card h3 { font-size: 12px; margin: 6px 0 4px; }
+    .product-card p  { font-size: 11px; margin: 0 0 6px; }
+    .btn-details { font-size: 12px; padding: 6px 10px; }
+
+    /* --- 5. Корзина: на всю ширину экрана --- */
+    .cart-modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        top: auto !important;
+        border-radius: 16px 16px 0 0 !important;
+        max-height: 85vh !important;
+    }
+    .cart-modal-body { max-height: 55vh !important; }
+    .cart-item-row { flex-wrap: wrap; gap: 8px; }
+    .cart-item-img { width: 50px; height: 50px; }
+
+    .page-stats { display: none; }
+}
+
+@media (max-width: 480px) {
+    .catalogContainer {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+        padding: 8px !important;
+    }
+    .product-card img { height: 130px !important; }
+    .top { padding: 8px 10px !important; }
+}

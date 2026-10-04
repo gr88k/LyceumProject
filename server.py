@@ -3,6 +3,7 @@ from flask import render_template, send_from_directory, jsonify, request, redire
 import json
 import math
 import os
+import re
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -417,6 +418,21 @@ def catalog():
         'pages': list(range(max(1, page - 2), min(total_pages, page + 2) + 1))
     }
 
+    # Строим строку параметров фильтров для передачи в пагинацию
+    # (все параметры кроме 'page', чтобы ссылки пагинации их сохраняли)
+    filter_params = []
+    for cat in selected_categories:
+        filter_params.append(f'category={cat}')
+    for col in selected_colors:
+        filter_params.append(f'color={col}')
+    for siz in selected_sizes:
+        filter_params.append(f'size={siz}')
+    if show_out_of_stock:
+        filter_params.append('out_of_stock=1')
+    if search_query:
+        filter_params.append(f'q={search_query}')
+    filter_query_string = '&'.join(filter_params)
+
     return render_template(
         'catalog.html',
         products=paginated_products,
@@ -426,7 +442,8 @@ def catalog():
         selected_categories=selected_categories,
         selected_colors=selected_colors,
         selected_sizes=selected_sizes,
-        show_out_of_stock=show_out_of_stock
+        show_out_of_stock=show_out_of_stock,
+        filter_query_string=filter_query_string
     )
 
 # @app.route('/product/<string:product_article>') # страница товара
@@ -483,7 +500,8 @@ def product_detail(article):
             variants_data[color].append({
                 'id':    variant.id,
                 'size':  variant.size or 'Универсальный',
-                'stock': variant.stock,
+                'stock': variant.stock if variant.stock <= 10 else "> 10",
+                'stock_real': variant.stock,
                 'image': variant.image if variant.image else DEFAULT_IMAGE
             })
 
@@ -509,6 +527,10 @@ def data():
 @app.route('/about')
 def about():
     return render_template("index.html") # отображение главной страницы
+
+@app.route('/')
+def index():
+    return render_template("index.html")
 
 def send_confirm_email(email, username, code):
     """Отправляет письмо с кодом подтверждения регистрации."""
@@ -740,18 +762,132 @@ def checkout_custom_static():
 def profile_custom_static():
     return send_from_directory('css', 'profile.css')
 
-@app.route('/admin/import-xlsx')
+def parse_article(article_full):
+    """
+    Разбирает строку артикула вида 'BK124074 джинсовый 48-50' на код товара,
+    цвет и размер. Код — первый токен с буквами+цифрами слитно (BK124074,
+    SNM223035), либо чисто числовой токен (для 'Топ 808'). Размер — последний
+    токен вида ДД-ДД, если есть. Всё остальное — цвет.
+    Возвращает (base_article, color, size, remaining_parts).
+    """
+    article_tokens = article_full.split()
+    if not article_tokens:
+        return None, None, None, []
+
+    code_idx = None
+    for i, tok in enumerate(article_tokens):
+        if re.search(r'[A-Za-zА-Яа-я]', tok) and re.search(r'\d', tok):
+            code_idx = i
+            break
+    if code_idx is None:
+        for i, tok in enumerate(article_tokens):
+            if tok.isdigit():
+                code_idx = i
+                break
+    if code_idx is None:
+        code_idx = 0
+
+    base_article = ' '.join(article_tokens[:code_idx + 1])
+    remaining_parts = article_tokens[code_idx + 1:]
+
+    color = "Обычный"
+    size = "Универсальный"
+
+    if remaining_parts and re.match(r'^\d{2}-\d{2}$', remaining_parts[-1]):
+        size = remaining_parts[-1]
+        color_parts = remaining_parts[:-1]
+    else:
+        color_parts = remaining_parts
+
+    if color_parts:
+        color = " ".join(color_parts).capitalize()
+
+    return base_article, color, size, remaining_parts
+
+
+def upsert_product_variant(name, article_full, stock, price):
+    """
+    Создаёт или обновляет Product + ProductVariant по строке вида из 1С/xlsx.
+    Возвращает (product_created: bool, variant_created: bool) или None при ошибке.
+    """
+    if not article_full or price is None:
+        return None
+
+    base_article, color, size, remaining_parts = parse_article(article_full)
+    if base_article is None:
+        return None
+
+    name_lower = name.lower()
+    category = 'hat' if ('шапка' in name_lower or 'снуд' in name_lower) else 'cap'
+    image_path = DEFAULT_IMAGE
+
+    base_name = name
+    for p in remaining_parts:
+        base_name = base_name.replace(p, '')
+    base_name = base_name.strip()
+
+    product_created = False
+    variant_created = False
+
+    product = Product.query.filter_by(article=base_article).first()
+    if not product:
+        product = Product(
+            name=base_name,
+            article=base_article,
+            category=category,
+            price=price,
+            main_image=image_path
+        )
+        db.session.add(product)
+        db.session.flush()
+        product_created = True
+    else:
+        product.price = price
+
+    variant = ProductVariant.query.filter_by(
+        product_id=product.id,
+        size=size,
+        color=color
+    ).first()
+
+    if variant:
+        variant.stock = stock
+    else:
+        variant = ProductVariant(
+            product_id=product.id,
+            size=size,
+            color=color,
+            stock=stock
+        )
+        db.session.add(variant)
+        variant_created = True
+
+    return product_created, variant_created
+
+
+@app.route('/admin/import-xlsx', methods=['GET', 'POST'])
 def admin_import_xlsx():
-    import openpyxl  # Импортируем библиотеку внутри роута
-    
-    # Имя твоего Excel-файла в корне проекта
-    xlsx_filename = 'каталог.xlsx'
-    
-    if not os.path.exists(xlsx_filename):
+    import openpyxl
+
+    # POST — загрузка файла через форму
+    if request.method == 'POST':
+        if 'xlsx_file' not in request.files:
+            return jsonify({"status": "error", "message": "Файл не выбран"}), 400
+        f = request.files['xlsx_file']
+        if not f.filename.endswith('.xlsx'):
+            return jsonify({"status": "error", "message": "Нужен файл .xlsx"}), 400
+        xlsx_path = os.path.join(os.path.dirname(__file__), 'каталог.xlsx')
+        f.save(xlsx_path)
+    else:
+        xlsx_path = os.path.join(os.path.dirname(__file__), 'каталог.xlsx')
+
+    if not os.path.exists(xlsx_path):
         return jsonify({
-            "status": "error", 
-            "message": f"Файл {xlsx_filename} не найден в корневой папке проекта!"
+            "status": "error",
+            "message": "Файл каталог.xlsx не найден. Загрузите его через форму."
         }), 404
+
+    xlsx_filename = xlsx_path
         
     try:
         # Открываем книгу. data_only=True берет значения из ячеек, а не формулы
@@ -802,86 +938,16 @@ def admin_import_xlsx():
             price = float(price_val)
         except (ValueError, TypeError):
             continue
-            
-        # Определяем категорию
-        category = 'hat' if 'Шапка' in name else 'cap'
-        
-        # Парсинг артикула (выделение основы, цвета и размера)
-        parts = article_full.split()
-        if not parts:
-            continue
-            
-        if parts[0].lower() == 'топ' and len(parts) > 1:
-            base_article = f"{parts[0]}_{parts[1]}"  # "Топ_808"
-            remaining_parts = parts[2:]
-        else:
-            base_article = parts[0]  # "BK122036"
-            remaining_parts = parts[1:]
-            
-        color = "Обычный"
-        size = "Универсальный"
 
-        # заглушка
-        name_lower = name.lower()
-        if 'шапка' in name_lower or 'снуд' in name_lower:
-            category = 'hat'
-            image_path = DEFAULT_IMAGE
-        else:
-            category = 'cap'
-            image_path = DEFAULT_IMAGE
-        
-        if remaining_parts:
-            last_part = remaining_parts[-1]
-            if '-' in last_part or last_part.isdigit():
-                size = last_part
-                color_parts = remaining_parts[:-1]
-            else:
-                color_parts = remaining_parts
-                
-            if color_parts:
-                color = " ".join(color_parts).capitalize()
-                
-        # Чистим базовое имя от характеристик
-        base_name = name
-        for p in remaining_parts:
-            base_name = base_name.replace(p, '')
-        base_name = base_name.strip()
-        
-        # 1. Добавляем или обновляем главный товар (Product)
-        product = Product.query.filter_by(article=base_article).first()
-        if not product:
-            product = Product(
-                name=base_name,
-                article=base_article,
-                category=category,
-                price=price,
-                main_image=image_path # формат файла
-            )
-            db.session.add(product)
-            db.session.flush()  # Генерируем id для связи
+        result = upsert_product_variant(name, article_full, stock, price)
+        if result is None:
+            continue
+        product_created, variant_created = result
+        if product_created:
             inserted_products += 1
-        else:
-            product.price = price  # Актуализируем цену основного товара
-            
-        # 2. Добавляем или обновляем модификацию (ProductVariant)
-        variant = ProductVariant.query.filter_by(
-            product_id=product.id,
-            size=size,
-            color=color
-        ).first()
-        
-        if variant:
-            variant.stock = stock  # Обновляем остаток на складе
-        else:
-            variant = ProductVariant(
-                product_id=product.id,
-                size=size,
-                color=color,
-                stock=stock
-            )
-            db.session.add(variant)
+        if variant_created:
             inserted_variants += 1
-            
+
     try:
         db.session.commit()
         return jsonify({
@@ -892,7 +958,82 @@ def admin_import_xlsx():
     except Exception as e:
         db.session.rollback()
         return jsonify({"status": "error", "message": str(e)}), 500
-    
+
+
+# ===== API ДЛЯ СИНХРОНИЗАЦИИ С 1С =====
+ONEC_API_TOKEN = "435bd9b26921cbf7790c0534d7f84cc32d4d5e40a49130a634bf745773d20be5"  # тот же токен должен быть прописан в 1С
+
+
+@app.route('/api/sync/products', methods=['POST'])
+def sync_products_from_1c():
+    """
+    Принимает от 1С JSON вида:
+    {
+        "products": [
+            {"article": "BK124074 джинсовый 48-50", "name": "Бейсболка BK124074 джинсовый 48-50", "price": 450, "stock": 84},
+            ...
+        ]
+    }
+    Каждая строка — это одна вариация (как строка в Excel-выгрузке).
+    Артикул содержит код+цвет+размер вместе, парсится так же как при xlsx-импорте.
+    """
+    token = request.headers.get('X-API-Key')
+    if token != ONEC_API_TOKEN:
+        return jsonify({"status": "error", "message": "Неверный токен доступа"}), 403
+
+    data = request.get_json(silent=True)
+    if not data or 'products' not in data:
+        return jsonify({"status": "error", "message": "Ожидается JSON с полем 'products'"}), 400
+
+    inserted_products = 0
+    inserted_variants = 0
+    updated_variants = 0
+    skipped = 0
+
+    for item in data['products']:
+        name = str(item.get('name', '')).strip()
+        article_full = str(item.get('article', '')).strip()
+        price_val = item.get('price')
+        stock_val = item.get('stock', 0)
+
+        if not article_full or not name or price_val is None:
+            skipped += 1
+            continue
+
+        try:
+            price = float(price_val)
+            stock = int(float(stock_val))
+        except (ValueError, TypeError):
+            skipped += 1
+            continue
+
+        result = upsert_product_variant(name, article_full, stock, price)
+        if result is None:
+            skipped += 1
+            continue
+
+        product_created, variant_created = result
+        if product_created:
+            inserted_products += 1
+        if variant_created:
+            inserted_variants += 1
+        else:
+            updated_variants += 1
+
+    try:
+        db.session.commit()
+        return jsonify({
+            "status": "success",
+            "new_products": inserted_products,
+            "new_variants": inserted_variants,
+            "updated_variants": updated_variants,
+            "skipped": skipped
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
 @app.route('/cart/add', methods=['POST'])
 def add_to_cart():
     if not current_user.is_authenticated:

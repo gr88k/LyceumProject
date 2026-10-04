@@ -77,17 +77,22 @@
 </head>
 <body>
     <div class="container">
-        <div class="top">
-            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
+                <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
             <div class="info">
-                <a href="/about">О нас</a>
-                <a href="/catalog">Каталог</a>
+                <a href="/about"><span class="nav-text">О нас</span><span class="nav-icon"><i class="fas fa-info-circle"></i></span></a>
+                <a href="/catalog"><span class="nav-text">Каталог</span><span class="nav-icon"><i class="fas fa-th-large"></i></span></a>
             </div>
             <form method="GET" action="/catalog" class="search-form">
-                <input type="text" name="q" placeholder="Поиск товаров..." class="search-input">
+                <input type="text" name="q" placeholder="Поиск товаров..." value="{{ request.args.get('q', '') }}" class="search-input">
                 <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
             </form>
-            <a href="/register" class="register">Регистрация</a>
+            <div class="top-right-group">
+                <a href="/register" class="register">
+                    <span class="profile-text">Регистрация</span>
+                    <span class="profile-icon"><i class="fas fa-user"></i></span>
+                </a>
+            </div>
         </div>
 
         <div class="formContainer">

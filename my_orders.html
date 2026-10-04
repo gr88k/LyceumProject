@@ -69,6 +69,19 @@
         }
         .order-items-table tr:last-child td { border-bottom: none; }
 
+        /* Обёртка таблицы — скролл на мобильных */
+        .table-scroll-wrap {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .order-items-table { font-size: 12px; min-width: 480px; }
+            .order-items-table th,
+            .order-items-table td { padding: 6px 8px; }
+        }
+
         .order-footer {
             display: flex;
             justify-content: space-between;
@@ -100,28 +113,36 @@
     </style>
 </head>
 <body>
-    <div class="top">
-        <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
-        <div class="info">
-            <a href="/about">О нас</a>
-            <a href="/catalog">Каталог</a>
-        </div>
-        <div class="top-right">
-            <div class="dropdown">
-                <span class="register">Профиль ▼</span>
-                <div class="dropdown-menu">
-                    <a href="{{ url_for('profile') }}">Личный кабинет</a>
-                    <a href="{{ url_for('my_orders') }}">Мои заказы</a>
-                    {% if current_user.role == 'Admin' %}
+            <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
+            <div class="info">
+                <a href="/about"><span class="nav-text">О нас</span><span class="nav-icon"><i class="fas fa-info-circle"></i></span></a>
+                <a href="/catalog"><span class="nav-text">Каталог</span><span class="nav-icon"><i class="fas fa-th-large"></i></span></a>
+            </div>
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text" name="q" placeholder="Поиск товаров..." value="{{ request.args.get('q', '') }}" class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+            <div class="top-right-group">
+                <div class="dropdown">
+                    <span class="register">
+                        <span class="profile-text">Профиль ▼</span>
+                        <span class="profile-icon"><i class="fas fa-user"></i> ▾</span>
+                    </span>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                        <a href="{{ url_for('my_orders') }}">Мои заказы</a>
+                        {% if current_user.role == 'Admin' %}
+                            <hr>
+                            <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                            <a href="{{ url_for('admin_products') }}">Товары</a>
+                        {% endif %}
                         <hr>
-                        <a href="{{ url_for('admin_orders') }}">Заказы</a>
-                    {% endif %}
-                    <hr>
-                    <a href="{{ url_for('logout') }}">Выйти</a>
+                        <a href="{{ url_for('logout') }}">Выйти</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
     <div class="orders-page">
         <h1 class="page-title">Мои заказы</h1>
@@ -160,6 +181,7 @@
                 <!-- Детали (раскрываемые) -->
                 <div class="collapsible" id="order-details-{{ order.id }}">
                     <div class="order-body">
+                        <div class="table-scroll-wrap">
                         <table class="order-items-table">
                             <thead>
                                 <tr>
@@ -185,6 +207,7 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        </div><!-- /table-scroll-wrap -->
 
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; font-size:14px; color:#555; padding-top:8px;">
                             <div>

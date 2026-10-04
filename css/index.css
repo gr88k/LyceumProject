@@ -179,3 +179,88 @@
     .about-section h2 { font-size: 20px; }
     .cta-section h3   { font-size: 18px; }
 }
+
+/* =====================================================
+   МОБИЛЬНЫЙ АДАПТИВ — ГЛАВНАЯ / О НАС (до 768px)
+   ===================================================== */
+
+.top-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-right: 50px;
+}
+.nav-icon    { display: none; }
+.nav-text    { display: inline; }
+.profile-icon { display: none; }
+.profile-text { display: inline; }
+
+.dropdown { position: relative; display: inline-block; }
+.dropdown-menu {
+    position: absolute;
+    top: 100%; right: 0;
+    background: #fff;
+    min-width: 160px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+    opacity: 0; visibility: hidden;
+    transition: all 0.25s ease;
+    z-index: 200;
+}
+.dropdown:hover .dropdown-menu { opacity: 1; visibility: visible; }
+.dropdown-menu a {
+    display: block; padding: 10px 20px;
+    color: #333; text-decoration: none;
+    font-family: 'PT Serif', serif; font-size: 15px;
+    transition: background 0.2s;
+}
+.dropdown-menu a:hover { background: #f5f5f5; }
+.dropdown-menu hr { margin: 4px 0; border: none; border-top: 1px solid #eee; }
+
+.header-cart-link {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: auto !important;
+    font-size: 26px !important;
+    color: rgb(64,64,64) !important;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+.header-cart-link:hover { color: #28a745 !important; transform: scale(1.15); }
+
+@media (max-width: 768px) {
+
+    .logo {
+        padding-left: 0 !important;
+        max-height: 52px !important;
+        max-width: 110px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+    }
+
+    .top {
+        display: grid !important;
+        grid-template-columns: auto 1fr auto !important;
+        grid-template-rows: auto auto !important;
+        align-items: center !important;
+        padding: 10px 14px !important;
+        height: auto !important;
+        gap: 8px !important;
+        margin-bottom: 16px !important;
+    }
+    .top > img.logo       { grid-column: 1; grid-row: 1; }
+    .top > .info          { grid-column: 2; grid-row: 1; padding-left: 10px !important; gap: 18px !important; }
+    .top > .search-form   { grid-column: 1 / -1; grid-row: 2; max-width: 100% !important; width: 100% !important; }
+    .top > .top-right-group { grid-column: 3; grid-row: 1; padding-right: 0 !important; gap: 14px !important; }
+
+    .nav-text    { display: none; }
+    .nav-icon    { display: inline; font-size: 18px; }
+    .profile-text { display: none; }
+    .profile-icon { display: inline; font-size: 20px; }
+    .top a        { font-size: 18px !important; width: auto !important; }
+    .top .register { padding-right: 0 !important; font-size: 20px; }
+    .header-cart-link { font-size: 22px !important; }
+    .dropdown-menu { left: auto !important; right: 0 !important; }
+}

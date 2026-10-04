@@ -35,9 +35,14 @@
 
     <div class="ap-header-row">
         <h1 class="page-title"><i class="fas fa-boxes" style="color:#7c3aed;"></i> Управление товарами</h1>
-        <button class="ap-new-btn" id="btn-new-product">
-            <i class="fas fa-plus"></i> Новый товар
-        </button>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <button class="ap-xlsx-btn" id="btn-import-xlsx">
+                <i class="fas fa-file-excel"></i> Загрузить каталог
+            </button>
+            <button class="ap-new-btn" id="btn-new-product">
+                <i class="fas fa-plus"></i> Новый товар
+            </button>
+        </div>
     </div>
 
     <!-- Поиск и фильтр -->
@@ -294,7 +299,208 @@
 </div>
 
 
+<!-- ============================
+     МОДАЛЬНОЕ ОКНО ЗАГРУЗКИ XLSX
+     ============================ -->
+<div id="xlsx-modal" class="ap-modal">
+    <div class="ap-modal-content" style="max-width:500px;">
+        <div class="ap-modal-header">
+            <h2><i class="fas fa-file-excel" style="color:#1d6f42;"></i> Загрузить каталог Excel</h2>
+            <span class="ap-modal-close" onclick="closeXlsxModal()">&times;</span>
+        </div>
+        <div class="ap-modal-body">
+            <p style="font-family:'PT Sans',sans-serif; font-size:15px; color:#555; margin-bottom:20px; line-height:1.6;">
+                Загрузите файл <strong>каталог.xlsx</strong> — товары и остатки обновятся автоматически.<br>
+                Существующие картинки и описания <strong>не пострадают</strong>.
+            </p>
+
+            <div id="xlsx-drop-zone" class="xlsx-drop-zone">
+                <i class="fas fa-cloud-upload-alt" style="font-size:40px; color:#ccc; margin-bottom:12px; display:block;"></i>
+                <p style="color:#aaa; font-family:'PT Sans',sans-serif; margin:0 0 12px;">
+                    Перетащите файл сюда или нажмите для выбора
+                </p>
+                <label class="ap-save-btn" style="cursor:pointer; display:inline-flex;">
+                    <i class="fas fa-folder-open"></i>&nbsp; Выбрать файл
+                    <input type="file" id="xlsx-file-input" accept=".xlsx" style="display:none;">
+                </label>
+            </div>
+
+            <div id="xlsx-selected-file" style="display:none; margin-top:14px; padding:12px 16px; background:#f0fff4; border:1px solid #b2dfdb; border-radius:6px; font-family:'PT Sans',sans-serif; font-size:14px; color:#2e7d32;">
+                <i class="fas fa-file-excel"></i> <span id="xlsx-file-name"></span>
+            </div>
+
+            <div id="xlsx-progress" style="display:none; margin-top:16px;">
+                <div style="height:6px; background:#eee; border-radius:3px; overflow:hidden;">
+                    <div id="xlsx-progress-bar" style="height:100%; width:0%; background:#7c3aed; transition:width 0.3s;"></div>
+                </div>
+                <p id="xlsx-progress-text" style="font-family:'PT Sans',sans-serif; font-size:13px; color:#888; margin-top:8px; text-align:center;">Загрузка...</p>
+            </div>
+
+            <div id="xlsx-result" style="display:none; margin-top:16px;"></div>
+        </div>
+        <div class="ap-modal-footer">
+            <span></span>
+            <div style="display:flex; gap:12px;">
+                <button class="ap-cancel-btn" onclick="closeXlsxModal()">Отмена</button>
+                <button class="ap-save-btn" id="xlsx-upload-btn" onclick="uploadXlsx()" disabled style="opacity:0.5; cursor:not-allowed;">
+                    <i class="fas fa-upload"></i> Загрузить и импортировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.ap-xlsx-btn {
+    background: #1d6f42;
+    color: #fff;
+    border: none;
+    padding: 12px 22px;
+    font-family: 'PT Serif', serif;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.ap-xlsx-btn:hover { background: #155a34; transform: scale(1.03); }
+
+.xlsx-drop-zone {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 30px 20px;
+    text-align: center;
+    background: #fafafa;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+}
+.xlsx-drop-zone.drag-over {
+    border-color: #7c3aed;
+    background: #f3e8ff;
+}
+</style>
+
 <script>
+// ===== XLSX UPLOAD MODAL =====
+document.getElementById('btn-import-xlsx').addEventListener('click', () => {
+    document.getElementById('xlsx-modal').style.display = 'flex';
+    resetXlsxModal();
+});
+
+function closeXlsxModal() {
+    document.getElementById('xlsx-modal').style.display = 'none';
+}
+
+function resetXlsxModal() {
+    document.getElementById('xlsx-file-input').value = '';
+    document.getElementById('xlsx-selected-file').style.display = 'none';
+    document.getElementById('xlsx-progress').style.display = 'none';
+    document.getElementById('xlsx-result').style.display = 'none';
+    const btn = document.getElementById('xlsx-upload-btn');
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+}
+
+// Выбор файла через инпут
+document.getElementById('xlsx-file-input').addEventListener('change', function() {
+    if (this.files[0]) showSelectedFile(this.files[0]);
+});
+
+// Drag & Drop
+const dropZone = document.getElementById('xlsx-drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.xlsx')) {
+        document.getElementById('xlsx-file-input').files = e.dataTransfer.files;
+        showSelectedFile(file);
+    } else {
+        alert('Нужен файл формата .xlsx');
+    }
+});
+
+function showSelectedFile(file) {
+    document.getElementById('xlsx-file-name').textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' КБ)';
+    document.getElementById('xlsx-selected-file').style.display = 'block';
+    const btn = document.getElementById('xlsx-upload-btn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+}
+
+async function uploadXlsx() {
+    const input = document.getElementById('xlsx-file-input');
+    if (!input.files[0]) return;
+
+    const progressEl  = document.getElementById('xlsx-progress');
+    const progressBar = document.getElementById('xlsx-progress-bar');
+    const progressTxt = document.getElementById('xlsx-progress-text');
+    const resultEl    = document.getElementById('xlsx-result');
+    const uploadBtn   = document.getElementById('xlsx-upload-btn');
+
+    progressEl.style.display = 'block';
+    resultEl.style.display = 'none';
+    uploadBtn.disabled = true;
+    uploadBtn.style.opacity = '0.5';
+
+    progressBar.style.width = '30%';
+    progressTxt.textContent = 'Загрузка файла на сервер...';
+
+    const formData = new FormData();
+    formData.append('xlsx_file', input.files[0]);
+
+    try {
+        progressBar.style.width = '60%';
+        progressTxt.textContent = 'Обработка данных...';
+
+        const res  = await fetch('/admin/import-xlsx', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        progressBar.style.width = '100%';
+
+        if (data.status === 'success') {
+            progressBar.style.background = '#28a745';
+            progressTxt.textContent = 'Готово!';
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = `
+                <div style="background:#e8f8ec; border:1px solid #b2dfdb; border-radius:6px; padding:14px 18px; font-family:'PT Sans',sans-serif; font-size:14px; color:#155724;">
+                    <strong>✓ Импорт завершён успешно</strong><br><br>
+                    Новых товаров: <strong>${data.inserted_models ?? 0}</strong><br>
+                    Новых вариаций: <strong>${data.inserted_variants ?? 0}</strong><br>
+                    Обновлено вариаций: <strong>${data.updated_variants ?? 0}</strong>
+                </div>`;
+            setTimeout(() => { closeXlsxModal(); location.reload(); }, 3000);
+        } else {
+            progressBar.style.background = '#dc3545';
+            progressTxt.textContent = 'Ошибка';
+            resultEl.style.display = 'block';
+            resultEl.innerHTML = `
+                <div style="background:#fde8e8; border:1px solid #f5c2c2; border-radius:6px; padding:14px 18px; font-family:'PT Sans',sans-serif; font-size:14px; color:#721c24;">
+                    <strong>Ошибка:</strong> ${data.message}
+                </div>`;
+            uploadBtn.disabled = false;
+            uploadBtn.style.opacity = '1';
+        }
+    } catch (err) {
+        progressBar.style.background = '#dc3545';
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<div style="color:#721c24; font-family:'PT Sans',sans-serif;">Ошибка сети: ${err.message}</div>`;
+        uploadBtn.disabled = false;
+        uploadBtn.style.opacity = '1';
+    }
+}
+
+window.addEventListener('click', e => {
+    if (e.target.id === 'xlsx-modal') closeXlsxModal();
+});
+
 // =================== ФИЛЬТРАЦИЯ ТАБЛИЦЫ ===================
 function applyFilters() {
     const q = document.getElementById('ap-search').value.toLowerCase();

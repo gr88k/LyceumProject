@@ -11,10 +11,10 @@
     <div class="pagination">
         <!-- Первая страница -->
         {% if pagination.has_prev %}
-            <a href="/catalog?page=1" class="page-link first" title="Первая страница">
+            <a href="/catalog?page=1{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link first" title="Первая страница">
                 &laquo;&laquo;
             </a>
-            <a href="/catalog?page={{ pagination.prev_page }}" class="page-link prev" title="Предыдущая">
+            <a href="/catalog?page={{ pagination.prev_page }}{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link prev" title="Предыдущая">
                 &laquo;
             </a>
         {% else %}
@@ -24,7 +24,7 @@
         
         <!-- Номера страниц -->
         {% if pagination.pages and pagination.pages[0] > 1 %}
-            <a href="/catalog?page=1" class="page-link">1</a>
+            <a href="/catalog?page=1{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link">1</a>
             {% if pagination.pages[0] > 2 %}
                 <span class="page-dots">...</span>
             {% endif %}
@@ -35,7 +35,7 @@
                 {% if page_num == pagination.current_page %}
                     <span class="page-link active">{{ page_num }}</span>
                 {% else %}
-                    <a href="/catalog?page={{ page_num }}" class="page-link">{{ page_num }}</a>
+                    <a href="/catalog?page={{ page_num }}{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link">{{ page_num }}</a>
                 {% endif %}
             {% endfor %}
         {% endif %}
@@ -44,15 +44,15 @@
             {% if pagination.pages[-1] < pagination.total_pages - 1 %}
                 <span class="page-dots">...</span>
             {% endif %}
-            <a href="/catalog?page={{ pagination.total_pages }}" class="page-link">{{ pagination.total_pages }}</a>
+            <a href="/catalog?page={{ pagination.total_pages }}{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link">{{ pagination.total_pages }}</a>
         {% endif %}
         
         <!-- Последняя страница -->
         {% if pagination.has_next %}
-            <a href="/catalog?page={{ pagination.next_page }}" class="page-link next" title="Следующая">
+            <a href="/catalog?page={{ pagination.next_page }}{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link next" title="Следующая">
                 &raquo;
             </a>
-            <a href="/catalog?page={{ pagination.total_pages }}" class="page-link last" title="Последняя страница">
+            <a href="/catalog?page={{ pagination.total_pages }}{% if filter_query_string %}&{{ filter_query_string }}{% endif %}" class="page-link last" title="Последняя страница">
                 &raquo;&raquo;
             </a>
         {% else %}

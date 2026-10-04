@@ -9,28 +9,35 @@
 </head>
 <body>
     <div class = "container">
-        <div class = "top">
-            <img class = "logo" src = "/css/data/testlogo2.png" alt = "Логотип" width = "250" height = "200">
-
-            <div class = "info">
-                <a href = "/about">О нас</a>
-                <a href = "/catalog">Каталог</a>
+                <div class="top">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
+            <div class="info">
+                <a href="/about"><span class="nav-text">О нас</span><span class="nav-icon"><i class="fas fa-info-circle"></i></span></a>
+                <a href="/catalog"><span class="nav-text">Каталог</span><span class="nav-icon"><i class="fas fa-th-large"></i></span></a>
             </div>
-
-                <form method="GET" action="/catalog" class="search-form">
-                    <input type="text"
-                    name="q" 
-                    placeholder="Поиск товаров..." 
-                    value="{{ request.args.get('q', '') }}"
-                    class="search-input">
-                    <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
-                </form>
-                
-                {% if current_user.is_authenticated %}
-                    <a href = "/profile" class = "register">Профиль</a>
-                {% else %}
-                    <a href = "/register" class = "register">Регистрация</a>
-                {% endif %}
+            <form method="GET" action="/catalog" class="search-form">
+                <input type="text" name="q" placeholder="Поиск товаров..." value="{{ request.args.get('q', '') }}" class="search-input">
+                <button type="submit" class="search-btn"><i class="fas fa-search"></i></button>
+            </form>
+            <div class="top-right-group">
+                <div class="dropdown">
+                    <span class="register">
+                        <span class="profile-text">Профиль ▼</span>
+                        <span class="profile-icon"><i class="fas fa-user"></i> ▾</span>
+                    </span>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('profile') }}">Личный кабинет</a>
+                        <a href="{{ url_for('my_orders') }}">Мои заказы</a>
+                        {% if current_user.role == 'Admin' %}
+                            <hr>
+                            <a href="{{ url_for('admin_orders') }}">Заказы</a>
+                            <a href="{{ url_for('admin_products') }}">Товары</a>
+                        {% endif %}
+                        <hr>
+                        <a href="{{ url_for('logout') }}">Выйти</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class = "profileContainer">

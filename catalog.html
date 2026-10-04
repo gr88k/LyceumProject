@@ -10,11 +10,17 @@
 <body>
     <div class="container">
         <div class="top">
-            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип" width="250" height="200">
+            <img class="logo" src="/css/data/testlogo2.png" alt="Логотип">
 
             <div class="info">
-                <a href="/about">О нас</a>
-                <a href="/catalog">Каталог</a>
+                <a href="/about">
+                    <span class="nav-text">О нас</span>
+                    <span class="nav-icon"><i class="fas fa-info-circle"></i></span>
+                </a>
+                <a href="/catalog">
+                    <span class="nav-text">Каталог</span>
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                </a>
             </div>
 
             <form method="GET" action="/catalog" class="search-form">
@@ -27,13 +33,15 @@
             </form>
 
             {% if current_user.is_authenticated %}
+                <div class="top-right-group">
                     <a href="#" id="open-cart-btn" class="header-cart-link" title="Открыть корзину">
                         <i class="fas fa-shopping-cart"></i>
                     </a>
-
-                    <div class = "dropdown">
-                        <!--<a href = "/profile" class = "register">Профиль</a>-->
-                        <span class="register">Профиль ▼</span>
+                    <div class="dropdown">
+                        <span class="register">
+                            <span class="profile-text">Профиль ▼</span>
+                            <span class="profile-icon"><i class="fas fa-user"></i> ▾</span>
+                        </span>
                         <div class="dropdown-menu">
                             <a href="{{ url_for('profile') }}">Личный кабинет</a>
                             <a href="{{ url_for('my_orders') }}">Мои заказы</a>
@@ -47,10 +55,30 @@
                             <a href="{{ url_for('logout') }}">Выйти</a>
                         </div>
                     </div>
-                {% else %}
-                    <a href = "/register" class = "register">Регистрация</a>
-                {% endif %}
+                </div>
+            {% else %}
+                <div class="top-right-group">
+                    <a href="/register" class="register">
+                        <span class="profile-text">Регистрация</span>
+                        <span class="profile-icon"><i class="fas fa-user"></i></span>
+                    </a>
+                </div>
+            {% endif %}
         </div>
+
+        <!-- Кнопка фильтра — только на мобильных -->
+        <button class="mobile-filter-btn" id="mobile-filter-btn" onclick="openFilterDrawer()">
+            <i class="fas fa-sliders-h"></i> Фильтры
+        </button>
+
+        <!-- Шторка фильтров (мобильная) -->
+        <div class="filter-drawer-overlay" id="filter-overlay" onclick="closeFilterDrawer()"></div>
+        <div class="filter-drawer" id="filter-drawer">
+            <div class="filter-drawer-header">
+                <span>Фильтры</span>
+                <button class="filter-drawer-close" onclick="closeFilterDrawer()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="filter-drawer-body">
 
         <div class="filter-top-bar">
             <form method="GET" action="/catalog" id="filter-form" class="horizontal-filter-form">
@@ -103,6 +131,9 @@
                 </div>
             </form>
         </div>
+
+            </div><!-- /filter-drawer-body -->
+        </div><!-- /filter-drawer -->
 
         {% if products %}
             <div class="page-header">
@@ -239,6 +270,19 @@
         }
     </script>
     {% endif %}
+
+<script>
+function openFilterDrawer() {
+    document.getElementById('filter-drawer').classList.add('open');
+    document.getElementById('filter-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeFilterDrawer() {
+    document.getElementById('filter-drawer').classList.remove('open');
+    document.getElementById('filter-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+}
+</script>
 
 </body>
 </html>
